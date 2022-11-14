@@ -91,7 +91,6 @@ func sendStatRequest(url string, body string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(url)
 	request.Header.Add("application-type", "text/plain")
 
 	resp, clientErr := client.Do(request)
