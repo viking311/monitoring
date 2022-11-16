@@ -2,7 +2,6 @@ package entity
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"os"
 	"runtime"
@@ -31,7 +30,6 @@ func (c *Collector) sendReport() {
 func (c *Collector) sendStatRequest(uri string) {
 	bytesValue := []byte("")
 	reader := bytes.NewReader(bytesValue)
-	fmt.Println("Send report:" + c.endpoint + "/" + strings.TrimPrefix(uri, "/"))
 	request, err := http.NewRequest(http.MethodPost, c.endpoint+"/"+uri, reader)
 	if err != nil {
 		return
@@ -50,7 +48,6 @@ func (c *Collector) sendStatRequest(uri string) {
 func (c *Collector) updateStat() {
 	runtime.ReadMemStats(&c.stat)
 	c.statCollection.UpdateMetric(c.stat)
-	fmt.Println("Update metrics")
 }
 
 func (c *Collector) Do() {
