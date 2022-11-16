@@ -7,7 +7,7 @@ import (
 )
 
 type MetricEntityInterface interface {
-	GetUpdateUri() string
+	GetUpdateURI() string
 }
 
 type GuageMetricEntity struct {
@@ -15,7 +15,7 @@ type GuageMetricEntity struct {
 	Value float64
 }
 
-func (gme GuageMetricEntity) GetUpdateUri() string {
+func (gme GuageMetricEntity) GetUpdateURI() string {
 	return fmt.Sprintf("/update/guage/%s/%f", gme.Name, gme.Value)
 }
 
@@ -32,7 +32,7 @@ type CounterMetricEntity struct {
 	Value uint64
 }
 
-func (cme CounterMetricEntity) GetUpdateUri() string {
+func (cme CounterMetricEntity) GetUpdateURI() string {
 	return fmt.Sprintf("/update/counter/%s/%d", cme.Name, cme.Value)
 }
 

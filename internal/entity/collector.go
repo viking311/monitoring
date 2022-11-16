@@ -23,7 +23,7 @@ type Collector struct {
 
 func (c *Collector) sendReport() {
 	for _, metric := range c.statCollection.Collection {
-		go c.sendStatRequest(metric.GetUpdateUri())
+		go c.sendStatRequest(metric.GetUpdateURI())
 	}
 }
 
