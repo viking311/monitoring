@@ -1,37 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"syscall"
 	"time"
 
-	"github.com/viking311/monitoring/internal/metrics"
-	"github.com/viking311/monitoring/internal/signals"
-)
-
-const (
-	pollInterval   = 2 * time.Second
-	reportInterval = 10 * time.Second
+	"github.com/viking311/monitoring/internal/entity"
 )
 
 func main() {
+	collector := entity.NewCollector("http://localhost:8080/", 2*time.Second, 10*time.Second)
 
-	mc := metrics.NewMertricCollection("http://localhost:8080/")
-	sl := signals.NewSignalListener(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-	updateTicker := time.NewTicker(pollInterval)
-	sendTicker := time.NewTicker(reportInterval)
-	for {
-		select {
-		case <-updateTicker.C:
-			mc.Update()
-		case <-sendTicker.C:
-			err := mc.SendReport()
-			if err != nil {
-				fmt.Println(err)
-			}
-		case <-sl.C:
-			os.Exit(0)
-		}
-	}
+	collector.Do()
+
 }
