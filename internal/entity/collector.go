@@ -23,19 +23,18 @@ type Collector struct {
 
 func (c *Collector) sendReport() {
 	for _, metric := range c.statCollection.Collection {
-		go c.sendStatRequest(metric.GetUpdateURI())
+		go c.sendStatRequest(metric.GetUpdateURI(), metric.GetStringValue())
 	}
 }
 
-func (c *Collector) sendStatRequest(uri string) {
-	bytesValue := []byte("")
+func (c *Collector) sendStatRequest(uri string, value string) {
+	bytesValue := []byte(value)
 	reader := bytes.NewReader(bytesValue)
 	request, err := http.NewRequest(http.MethodPost, c.endpoint+"/"+uri, reader)
 	if err != nil {
 		return
 	}
-
-	request.Header.Add("application-type", "text/plain")
+	request.Header.Set("application-type", "text/plain")
 
 	client := &http.Client{}
 	resp, clientErr := client.Do(request)
