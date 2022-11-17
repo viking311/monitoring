@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"fmt"
-
 	"github.com/viking311/monitoring/internal/entity"
 )
 
@@ -14,7 +12,7 @@ type Saver struct {
 func (s Saver) Go() {
 	for val := range s.updateChan {
 		s.storage.Update(val)
-		fmt.Println("Updated metric - ", val.GetKey(), "with value - ", val.GetStringValue())
+		// fmt.Println("Updated metric - ", val.GetKey(), "with value - ", val.GetStringValue())
 	}
 }
 

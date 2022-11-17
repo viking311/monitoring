@@ -24,13 +24,13 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch pathParts[1] {
-	case "guage":
+	case "gauge":
 		mValue, err := strconv.ParseFloat(pathParts[3], 64)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		entity := entity.GuageMetricEntity{
+		entity := entity.GaugeMetricEntity{
 			Name:  pathParts[2],
 			Value: mValue,
 		}
