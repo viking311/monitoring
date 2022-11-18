@@ -2,6 +2,7 @@ package entity
 
 import (
 	"fmt"
+	"reflect"
 	"runtime"
 	"testing"
 
@@ -48,7 +49,7 @@ func TestMetricEntityCollection_UpdateMetric(t *testing.T) {
 		want *MetricEntityCollection
 	}{
 		{
-			name: "test1",
+			name: "UpdateMetric: test1",
 			mec:  &mec,
 			args: args{
 				stat: stat,
@@ -100,4 +101,307 @@ func getUpdateResult() *MetricEntityCollection {
 	mce.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: uint64(1)}
 
 	return &mce
+}
+
+func TestMetricEntityCollection_UpdateMetric_counterUpdate(t *testing.T) {
+	mec := NewMertricCollection()
+
+	stat := runtime.MemStats{}
+
+	stat.Alloc = 1
+	stat.BuckHashSys = 1
+	stat.Frees = 1
+	stat.GCCPUFraction = 1
+	stat.GCSys = 1
+	stat.HeapAlloc = 1
+	stat.HeapIdle = 1
+	stat.HeapInuse = 1
+	stat.HeapObjects = 1
+	stat.HeapReleased = 1
+	stat.HeapSys = 1
+	stat.MCacheInuse = 1
+	stat.MCacheSys = 1
+	stat.MSpanSys = 1
+	stat.Mallocs = 1
+	stat.NextGC = 1
+	stat.NumForcedGC = 1
+	stat.NumGC = 1
+	stat.OtherSys = 1
+	stat.PauseTotalNs = 1
+	stat.StackInuse = 1
+	stat.StackSys = 1
+	stat.Sys = 1
+	stat.TotalAlloc = 1
+
+	mec.UpdateMetric(stat)
+	mec.UpdateMetric(stat)
+	assert.Equal(t, uint64(2), mec.Collection["PollCount"].GetValue().(uint64))
+}
+
+func TestGaugeMetricEntity_GetUpdateURI(t *testing.T) {
+	tests := []struct {
+		name string
+		gme  *GaugeMetricEntity
+		want string
+	}{
+		{
+			name: "GetUpdateURI: test1",
+			gme: &GaugeMetricEntity{
+				Name:  "metric1",
+				Value: float64(1),
+			},
+			want: "/update/gauge/metric1/1.000000",
+		},
+		{
+			name: "GetUpdateURI: test2",
+			gme: &GaugeMetricEntity{
+				Name:  "metric2",
+				Value: float64(1.5),
+			},
+			want: "/update/gauge/metric2/1.500000",
+		},
+		{
+			name: "GetUpdateURI: test3",
+			gme: &GaugeMetricEntity{
+				Name:  "metric2",
+				Value: 0,
+			},
+			want: "/update/gauge/metric2/0.000000",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.gme.GetUpdateURI(); got != tt.want {
+				t.Errorf("GaugeMetricEntity.GetUpdateURI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGaugeMetricEntity_GetValue(t *testing.T) {
+	tests := []struct {
+		name string
+		gme  *GaugeMetricEntity
+		want interface{}
+	}{
+		{
+			name: "GetValue: test1",
+			gme: &GaugeMetricEntity{
+				Name:  "Metric1",
+				Value: 1,
+			},
+			want: float64(1),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.gme.GetValue(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GaugeMetricEntity.GetValue() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGaugeMetricEntity_GetKey(t *testing.T) {
+	tests := []struct {
+		name string
+		gme  *GaugeMetricEntity
+		want string
+	}{
+		{
+			name: "GetKey: test1",
+			gme: &GaugeMetricEntity{
+				Name:  "guageMetric",
+				Value: 1,
+			},
+			want: "guageMetric",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.gme.GetKey(); got != tt.want {
+				t.Errorf("GaugeMetricEntity.GetKey() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGaugeMetricEntity_SetValue(t *testing.T) {
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		gme  *GaugeMetricEntity
+		args args
+		want float64
+	}{
+		{
+			name: "SetValue: test1",
+			gme: &GaugeMetricEntity{
+				Name:  "m1",
+				Value: 1,
+			},
+			args: args{
+				value: float64(2),
+			},
+			want: float64(2),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.gme.SetValue(tt.args.value)
+			assert.Equal(t, tt.want, tt.gme.Value)
+		})
+	}
+}
+
+func TestGaugeMetricEntity_GetStringValue(t *testing.T) {
+	tests := []struct {
+		name string
+		gme  *GaugeMetricEntity
+		want string
+	}{
+		{
+			name: "TestGaugeMetricEntity_GetStringValue: test1",
+			gme: &GaugeMetricEntity{
+				Name:  "m1",
+				Value: 1,
+			},
+			want: "1.000000",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.gme.GetStringValue(); got != tt.want {
+				t.Errorf("GaugeMetricEntity.GetStringValue() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCounterMetricEntity_GetUpdateURI(t *testing.T) {
+	tests := []struct {
+		name string
+		cme  *CounterMetricEntity
+		want string
+	}{
+		{
+			name: "TestGaugeMetricEntity_GetStringValue: test1",
+			cme: &CounterMetricEntity{
+				Name:  "m1",
+				Value: uint64(1),
+			},
+			want: "/update/counter/m1/1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.cme.GetUpdateURI(); got != tt.want {
+				t.Errorf("CounterMetricEntity.GetUpdateURI() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCounterMetricEntity_GetValue(t *testing.T) {
+	tests := []struct {
+		name string
+		cme  *CounterMetricEntity
+		want interface{}
+	}{
+		{
+			name: "CounterMetricEntity_GetValue: test1",
+			cme: &CounterMetricEntity{
+				Name:  "m1",
+				Value: uint64(1),
+			},
+			want: uint64(1),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.cme.GetValue(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CounterMetricEntity.GetValue() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCounterMetricEntity_SetValue(t *testing.T) {
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		cme  *CounterMetricEntity
+		args args
+		want uint64
+	}{
+		{
+			name: "CounterMetricEntity_SetValue: test1",
+			cme: &CounterMetricEntity{
+				Name:  "m1",
+				Value: uint64(1),
+			},
+			args: args{
+				value: uint64(2),
+			},
+			want: uint64(2),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.cme.SetValue(tt.args.value)
+			assert.Equal(t, tt.want, tt.cme.Value)
+		})
+	}
+}
+
+func TestCounterMetricEntity_GetKey(t *testing.T) {
+	tests := []struct {
+		name string
+		cme  *CounterMetricEntity
+		want string
+	}{
+		{
+			name: "TestCounterMetricEntity_GetKey: test1",
+			cme: &CounterMetricEntity{
+				Name:  "m1",
+				Value: 1,
+			},
+			want: "m1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.cme.GetKey(); got != tt.want {
+				t.Errorf("CounterMetricEntity.GetKey() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCounterMetricEntity_GetStringValue(t *testing.T) {
+	tests := []struct {
+		name string
+		cme  *CounterMetricEntity
+		want string
+	}{
+		{
+			name: "TestCounterMetricEntity_GetStringValue: test1",
+			cme: &CounterMetricEntity{
+				Name:  "m1",
+				Value: 1,
+			},
+			want: "1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.cme.GetStringValue(); got != tt.want {
+				t.Errorf("CounterMetricEntity.GetStringValue() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
