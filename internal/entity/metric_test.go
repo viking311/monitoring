@@ -1,0 +1,103 @@
+package entity
+
+import (
+	"fmt"
+	"runtime"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestMetricEntityCollection_UpdateMetric(t *testing.T) {
+	type args struct {
+		stat runtime.MemStats
+	}
+	mec := NewMertricCollection()
+
+	stat := runtime.MemStats{}
+
+	stat.Alloc = 1
+	stat.BuckHashSys = 1
+	stat.Frees = 1
+	stat.GCCPUFraction = 1
+	stat.GCSys = 1
+	stat.HeapAlloc = 1
+	stat.HeapIdle = 1
+	stat.HeapInuse = 1
+	stat.HeapObjects = 1
+	stat.HeapReleased = 1
+	stat.HeapSys = 1
+	stat.MCacheInuse = 1
+	stat.MCacheSys = 1
+	stat.MSpanSys = 1
+	stat.Mallocs = 1
+	stat.NextGC = 1
+	stat.NumForcedGC = 1
+	stat.NumGC = 1
+	stat.OtherSys = 1
+	stat.PauseTotalNs = 1
+	stat.StackInuse = 1
+	stat.StackSys = 1
+	stat.Sys = 1
+	stat.TotalAlloc = 1
+
+	tests := []struct {
+		name string
+		mec  *MetricEntityCollection
+		args args
+		want *MetricEntityCollection
+	}{
+		{
+			name: "test1",
+			mec:  &mec,
+			args: args{
+				stat: stat,
+			},
+			want: getUpdateResult(),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mec.UpdateMetric(tt.args.stat)
+			assert.Equal(t, 26, len(tt.mec.Collection), "too few metrics")
+			fmt.Println(tt.mec.Collection)
+			_, ok := tt.mec.Collection["RandomValue"]
+			assert.Equal(t, true, ok)
+			delete(tt.mec.Collection, "RandomValue")
+			assert.Equal(t, tt.want, tt.mec)
+		})
+	}
+}
+func getUpdateResult() *MetricEntityCollection {
+	mce := MetricEntityCollection{
+		Collection: make(map[string]MetricEntityInterface),
+	}
+
+	mce.Collection["Alloc"] = &GaugeMetricEntity{Name: "Alloc", Value: float64(1)}
+	mce.Collection["BuckHashSys"] = &GaugeMetricEntity{Name: "BuckHashSys", Value: float64(1)}
+	mce.Collection["Frees"] = &GaugeMetricEntity{Name: "Frees", Value: float64(1)}
+	mce.Collection["GCCPUFraction"] = &GaugeMetricEntity{Name: "GCCPUFraction", Value: float64(1)}
+	mce.Collection["GCSys"] = &GaugeMetricEntity{Name: "GCSys", Value: float64(1)}
+	mce.Collection["HeapAlloc"] = &GaugeMetricEntity{Name: "HeapAlloc", Value: float64(1)}
+	mce.Collection["HeapIdle"] = &GaugeMetricEntity{Name: "HeapIdle", Value: float64(1)}
+	mce.Collection["HeapInuse"] = &GaugeMetricEntity{Name: "HeapInuse", Value: float64(1)}
+	mce.Collection["HeapObjects"] = &GaugeMetricEntity{Name: "HeapObjects", Value: float64(1)}
+	mce.Collection["HeapReleased"] = &GaugeMetricEntity{Name: "HeapReleased", Value: float64(1)}
+	mce.Collection["HeapSys"] = &GaugeMetricEntity{Name: "HeapSys", Value: float64(1)}
+	mce.Collection["MCacheInuse"] = &GaugeMetricEntity{Name: "MCacheInuse", Value: float64(1)}
+	mce.Collection["MCacheSys"] = &GaugeMetricEntity{Name: "MCacheSys", Value: float64(1)}
+	mce.Collection["MSpanSys"] = &GaugeMetricEntity{Name: "MSpanSys", Value: float64(1)}
+	mce.Collection["Mallocs"] = &GaugeMetricEntity{Name: "Mallocs", Value: float64(1)}
+	mce.Collection["NextGC"] = &GaugeMetricEntity{Name: "NextGC", Value: float64(1)}
+	mce.Collection["NumForcedGC"] = &GaugeMetricEntity{Name: "NumForcedGC", Value: float64(1)}
+	mce.Collection["NumGC"] = &GaugeMetricEntity{Name: "NumGC", Value: float64(1)}
+	mce.Collection["OtherSys"] = &GaugeMetricEntity{Name: "OtherSys", Value: float64(1)}
+	mce.Collection["PauseTotalNs"] = &GaugeMetricEntity{Name: "PauseTotalNs", Value: float64(1)}
+	mce.Collection["StackInuse"] = &GaugeMetricEntity{Name: "StackInuse", Value: float64(1)}
+	mce.Collection["StackSys"] = &GaugeMetricEntity{Name: "StackSys", Value: float64(1)}
+	mce.Collection["Sys"] = &GaugeMetricEntity{Name: "Sys", Value: float64(1)}
+	mce.Collection["TotalAlloc"] = &GaugeMetricEntity{Name: "TotalAlloc", Value: float64(1)}
+	mce.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: uint64(1)}
+
+	return &mce
+}
