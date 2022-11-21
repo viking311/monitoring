@@ -42,7 +42,7 @@ func (ims *InMemoryStorage) getAll() []entity.MetricEntityInterface {
 	return slice
 }
 
-func MewInMemoryStorage() InMemoryStorage {
+func NewInMemoryStorage() InMemoryStorage {
 	return InMemoryStorage{
 		data: make(map[string]entity.MetricEntityInterface),
 	}

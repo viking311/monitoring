@@ -17,7 +17,7 @@ func (s Saver) Go() {
 }
 
 func NewSaver(c chan entity.MetricEntityInterface) Saver {
-	s := MewInMemoryStorage()
+	s := NewInMemoryStorage()
 	return Saver{
 		storage:    &s,
 		updateChan: c,
