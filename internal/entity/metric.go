@@ -59,7 +59,7 @@ func (cme *CounterMetricEntity) GetValue() interface{} {
 func (cme *CounterMetricEntity) SetValue(value interface{}) {
 	intValue, ok := value.(uint64)
 	if ok {
-		cme.Value = intValue
+		cme.Value += intValue
 	}
 }
 

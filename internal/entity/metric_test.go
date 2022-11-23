@@ -135,7 +135,7 @@ func TestMetricEntityCollection_UpdateMetric_counterUpdate(t *testing.T) {
 
 	mec.UpdateMetric(stat)
 	mec.UpdateMetric(stat)
-	assert.Equal(t, uint64(2), mec.Collection["PollCount"].GetValue().(uint64))
+	assert.Equal(t, uint64(3), mec.Collection["PollCount"].GetValue().(uint64))
 }
 
 func TestGaugeMetricEntity_GetUpdateURI(t *testing.T) {
@@ -347,7 +347,7 @@ func TestCounterMetricEntity_SetValue(t *testing.T) {
 			args: args{
 				value: uint64(2),
 			},
-			want: uint64(2),
+			want: uint64(3),
 		},
 	}
 	for _, tt := range tests {
