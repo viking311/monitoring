@@ -12,14 +12,15 @@ type Saver struct {
 func (s Saver) Go() {
 	for val := range s.updateChan {
 		s.storage.Update(val)
+
 		// fmt.Println("Updated metric - ", val.GetKey(), "with value - ", val.GetStringValue())
 	}
 }
 
-func NewSaver(c chan entity.MetricEntityInterface) Saver {
-	s := NewInMemoryStorage()
+func NewSaver(c chan entity.MetricEntityInterface, s Repository) Saver {
+
 	return Saver{
-		storage:    &s,
+		storage:    s,
 		updateChan: c,
 	}
 }

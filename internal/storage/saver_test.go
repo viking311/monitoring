@@ -17,6 +17,7 @@ func TestSaver_Go(t *testing.T) {
 		Name:  "m1",
 		Value: uint64(1),
 	}
+	st := NewInMemoryStorage()
 	tests := []struct {
 		name string
 		s    Saver
@@ -25,7 +26,7 @@ func TestSaver_Go(t *testing.T) {
 	}{
 		{
 			name: "TestSaver_Go_test1",
-			s:    NewSaver(ch),
+			s:    NewSaver(ch, &st),
 			args: args{
 				value: m1,
 			},

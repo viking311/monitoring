@@ -8,7 +8,7 @@ type Repository interface {
 	Update(value entity.MetricEntityInterface)
 	Delete(key string)
 	GetByKey(key string) entity.MetricEntityInterface
-	getAll() []entity.MetricEntityInterface
+	GetAll() []entity.MetricEntityInterface
 }
 
 type InMemoryStorage struct {
@@ -32,9 +32,8 @@ func (ims *InMemoryStorage) GetByKey(key string) entity.MetricEntityInterface {
 	}
 }
 
-func (ims *InMemoryStorage) getAll() []entity.MetricEntityInterface {
+func (ims *InMemoryStorage) GetAll() []entity.MetricEntityInterface {
 	slice := make([]entity.MetricEntityInterface, len(ims.data))
-
 	for _, item := range ims.data {
 		slice = append(slice, item)
 	}

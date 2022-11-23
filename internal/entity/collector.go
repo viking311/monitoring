@@ -2,7 +2,6 @@ package entity
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"os"
 	"runtime"
@@ -29,10 +28,9 @@ func (c *Collector) sendReport() {
 }
 
 func (c *Collector) sendStatRequest(uri string, value string) {
-	fmt.Println(uri)
 	bytesValue := []byte(value)
 	reader := bytes.NewReader(bytesValue)
-	request, err := http.NewRequest(http.MethodPost, c.endpoint+"/"+uri, reader)
+	request, err := http.NewRequest(http.MethodPost, c.endpoint+uri, reader)
 	if err != nil {
 		return
 	}

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/viking311/monitoring/internal/entity"
 	"github.com/viking311/monitoring/internal/handlers"
 	"github.com/viking311/monitoring/internal/storage"
@@ -10,11 +13,21 @@ import (
 
 func main() {
 	c := make(chan entity.MetricEntityInterface, 100)
-
-	saver := storage.NewSaver(c)
+	s := storage.NewInMemoryStorage()
+	saver := storage.NewSaver(c, &s)
 	go saver.Go()
 
-	http.Handle("/update/", handlers.NewUpdateHandler(c))
+	r := chi.NewRouter()
 
-	http.ListenAndServe(":8080", nil)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	updateHandler := handlers.NewUpdateHandler(c)
+	r.Post("/update/{type}/{name}/{value}", updateHandler.ServeHTTP)
+
+	valueHandler := handlers.NewGetValueHandler(&s)
+	r.Get("/value/{type}/{name}", valueHandler.ServeHTTP)
+
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

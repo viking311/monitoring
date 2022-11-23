@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/viking311/monitoring/internal/entity"
 )
 
@@ -14,36 +15,36 @@ type UpdateHandler struct {
 
 func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-	if len(pathParts) != 4 {
+	typeName := strings.ToLower(chi.URLParam(r, "type"))
+	metricName := strings.ToLower(chi.URLParam(r, "name"))
+	metricValue := chi.URLParam(r, "value")
+
+	if typeName == "" || metricName == "" || metricValue == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	switch pathParts[1] {
+
+	switch typeName {
 	case "gauge":
-		mValue, err := strconv.ParseFloat(pathParts[3], 64)
+		mValue, err := strconv.ParseFloat(metricValue, 64)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		entity := entity.GaugeMetricEntity{
-			Name:  pathParts[2],
+			Name:  metricName,
 			Value: mValue,
 		}
 		uh.unpdateChan <- &entity
 
 	case "counter":
-		mValue, err := strconv.ParseUint(pathParts[3], 10, 64)
+		mValue, err := strconv.ParseUint(metricValue, 10, 64)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		entity := entity.CounterMetricEntity{
-			Name:  pathParts[2],
+			Name:  metricName,
 			Value: mValue,
 		}
 		uh.unpdateChan <- &entity
