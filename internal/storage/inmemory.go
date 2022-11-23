@@ -16,7 +16,13 @@ type InMemoryStorage struct {
 }
 
 func (ims *InMemoryStorage) Update(value entity.MetricEntityInterface) {
-	ims.data[value.GetKey()] = value
+	item := ims.GetByKey(value.GetKey())
+	if item != nil {
+		item.SetValue(value.GetValue())
+		ims.data[value.GetKey()] = item
+	} else {
+		ims.data[value.GetKey()] = value
+	}
 }
 
 func (ims *InMemoryStorage) Delete(key string) {
