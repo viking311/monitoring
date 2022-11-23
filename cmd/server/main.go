@@ -23,6 +23,10 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	getListHandler := handlers.NewGetListHandler(&s)
+
+	r.Get("/", getListHandler.ServeHTTP)
+
 	updateHandler := handlers.NewUpdateHandler(c)
 	r.Post("/update/{type}/{name}/{value}", updateHandler.ServeHTTP)
 
