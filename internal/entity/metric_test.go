@@ -268,7 +268,7 @@ func TestGaugeMetricEntity_GetStringValue(t *testing.T) {
 				Name:  "m1",
 				Value: 1,
 			},
-			want: "1.000000",
+			want: "1",
 		},
 	}
 	for _, tt := range tests {

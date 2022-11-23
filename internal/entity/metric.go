@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"runtime"
+	"strconv"
 )
 
 type MetricEntityInterface interface {
@@ -39,7 +40,7 @@ func (gme *GaugeMetricEntity) SetValue(value interface{}) {
 }
 
 func (gme *GaugeMetricEntity) GetStringValue() string {
-	return fmt.Sprintf("%f", gme.Value)
+	return strconv.FormatFloat(gme.Value, 'f', -1, 64)
 }
 
 type CounterMetricEntity struct {
