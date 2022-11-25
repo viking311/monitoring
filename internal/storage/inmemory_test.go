@@ -79,7 +79,7 @@ func TestInMemoryStorage_Delete(t *testing.T) {
 	}{
 		{
 			name: "TestInMemoryStorage_Delete",
-			ims:  &ims,
+			ims:  ims,
 			args: args{
 				key: "m1",
 			},
@@ -110,7 +110,7 @@ func TestInMemoryStorage_GetByKey(t *testing.T) {
 	}{
 		{
 			name: "TestInMemoryStorage_GetByKey_test1",
-			ims:  &ims,
+			ims:  ims,
 			args: args{
 				key: "m1",
 			},
@@ -118,7 +118,7 @@ func TestInMemoryStorage_GetByKey(t *testing.T) {
 		},
 		{
 			name: "TestInMemoryStorage_GetByKey_test1",
-			ims:  &ims,
+			ims:  ims,
 			args: args{
 				key: "m2",
 			},

@@ -26,7 +26,7 @@ func TestSaver_Go(t *testing.T) {
 	}{
 		{
 			name: "TestSaver_Go_test1",
-			s:    NewSaver(ch, &st),
+			s:    NewSaver(ch, st),
 			args: args{
 				value: m1,
 			},

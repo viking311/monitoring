@@ -14,7 +14,7 @@ import (
 func main() {
 	c := make(chan entity.MetricEntityInterface, 100)
 	s := storage.NewInMemoryStorage()
-	saver := storage.NewSaver(c, &s)
+	saver := storage.NewSaver(c, s)
 	go saver.Go()
 
 	r := chi.NewRouter()
@@ -23,14 +23,14 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	getListHandler := handlers.NewGetListHandler(&s)
+	getListHandler := handlers.NewGetListHandler(s)
 
 	r.Get("/", getListHandler.ServeHTTP)
 
 	updateHandler := handlers.NewUpdateHandler(c)
 	r.Post("/update/{type}/{name}/{value}", updateHandler.ServeHTTP)
 
-	valueHandler := handlers.NewGetValueHandler(&s)
+	valueHandler := handlers.NewGetValueHandler(s)
 	r.Get("/value/{type}/{name}", valueHandler.ServeHTTP)
 
 	log.Fatal(http.ListenAndServe(":8080", r))
