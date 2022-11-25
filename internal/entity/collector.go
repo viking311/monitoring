@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -19,9 +20,13 @@ type Collector struct {
 	statCollection MetricEntityCollection
 	stat           runtime.MemStats
 	signals        signals.SignalListener
+	mtx            sync.RWMutex
 }
 
 func (c *Collector) sendReport() {
+	c.mtx.RLock()
+	defer c.mtx.RUnlock()
+
 	for _, metric := range c.statCollection.Collection {
 		go c.sendStatRequest(metric.GetUpdateURI(), metric.GetStringValue())
 	}
@@ -45,6 +50,9 @@ func (c *Collector) sendStatRequest(uri string, value string) {
 }
 
 func (c *Collector) updateStat() {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
 	runtime.ReadMemStats(&c.stat)
 	c.statCollection.UpdateMetric(c.stat)
 }
@@ -72,7 +80,7 @@ func (c *Collector) Do() {
 
 }
 
-func NewCollector(endpoint string, pollInterval time.Duration, reportInterval time.Duration) Collector {
+func NewCollector(endpoint string, pollInterval time.Duration, reportInterval time.Duration) *Collector {
 	var collector = Collector{
 		endpoint:       strings.TrimSuffix(endpoint, "/"),
 		pollInterval:   pollInterval,
@@ -80,9 +88,10 @@ func NewCollector(endpoint string, pollInterval time.Duration, reportInterval ti
 		statCollection: NewMertricCollection(),
 		stat:           runtime.MemStats{},
 		signals:        signals.NewSignalListener(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT),
+		mtx:            sync.RWMutex{},
 	}
 
 	collector.updateStat()
 
-	return collector
+	return &collector
 }
