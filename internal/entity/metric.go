@@ -13,6 +13,7 @@ type MetricEntityInterface interface {
 	SetValue(value interface{})
 	GetKey() string
 	GetStringValue() string
+	GetShortTypeName() string
 }
 
 type GaugeMetricEntity struct {
@@ -43,6 +44,10 @@ func (gme *GaugeMetricEntity) GetStringValue() string {
 	return strconv.FormatFloat(gme.Value, 'f', -1, 64)
 }
 
+func (gme *GaugeMetricEntity) GetShortTypeName() string {
+	return "gauge"
+}
+
 type CounterMetricEntity struct {
 	Name  string
 	Value uint64
@@ -69,6 +74,10 @@ func (cme *CounterMetricEntity) GetKey() string {
 
 func (cme *CounterMetricEntity) GetStringValue() string {
 	return fmt.Sprintf("%d", cme.Value)
+}
+
+func (cme *CounterMetricEntity) GetShortTypeName() string {
+	return "counter"
 }
 
 type MetricEntityCollection struct {
