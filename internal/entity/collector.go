@@ -52,6 +52,12 @@ func (c *Collector) updateStat() {
 func (c *Collector) Do() {
 	updateTicker := time.NewTicker(c.pollInterval)
 	reportTicker := time.NewTicker(c.reportInterval)
+
+	defer func() {
+		updateTicker.Stop()
+		reportTicker.Stop()
+	}()
+
 	for {
 		select {
 		case <-updateTicker.C:
