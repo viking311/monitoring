@@ -2,6 +2,7 @@ package storage
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,7 @@ func TestInMemoryStorage_Update(t *testing.T) {
 			name: "InMemoryStorage_Update_test1",
 			ims: &InMemoryStorage{
 				data: make(map[string]entity.MetricEntityInterface),
+				mx:   sync.RWMutex{},
 			},
 			args: args{
 				value: &entity.GaugeMetricEntity{
@@ -38,6 +40,7 @@ func TestInMemoryStorage_Update(t *testing.T) {
 			name: "InMemoryStorage_Update_test2",
 			ims: &InMemoryStorage{
 				data: make(map[string]entity.MetricEntityInterface),
+				mx:   sync.RWMutex{},
 			},
 			args: args{
 				value: &entity.CounterMetricEntity{
