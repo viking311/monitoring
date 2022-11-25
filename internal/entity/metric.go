@@ -103,8 +103,7 @@ func (mec *MetricEntityCollection) UpdateMetric(stat runtime.MemStats) {
 	mec.Collection["RandomValue"] = &GaugeMetricEntity{Name: "RandomValue", Value: rand.Float64()}
 
 	if _, ok := mec.Collection["PollCount"]; ok {
-		v := mec.Collection["PollCount"].GetValue().(uint64) + 1
-		mec.Collection["PollCount"].SetValue(v)
+		mec.Collection["PollCount"].SetValue(uint64(1))
 	} else {
 		mec.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 1}
 	}
