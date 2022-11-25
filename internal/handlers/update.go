@@ -7,10 +7,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/viking311/monitoring/internal/entity"
+	"github.com/viking311/monitoring/internal/storage"
 )
 
 type UpdateHandler struct {
-	unpdateChan chan entity.MetricEntityInterface
+	str storage.Repository
 }
 
 func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,7 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Name:  metricName,
 			Value: mValue,
 		}
-		uh.unpdateChan <- &entity
+		uh.str.Update(&entity)
 
 	case "counter":
 		mValue, err := strconv.ParseUint(metricValue, 10, 64)
@@ -47,7 +48,7 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Name:  metricName,
 			Value: mValue,
 		}
-		uh.unpdateChan <- &entity
+		uh.str.Update(&entity)
 	default:
 		w.WriteHeader(http.StatusNotImplemented)
 		return
@@ -55,8 +56,8 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func NewUpdateHandler(c chan entity.MetricEntityInterface) UpdateHandler {
+func NewUpdateHandler(s storage.Repository) UpdateHandler {
 	return UpdateHandler{
-		unpdateChan: c,
+		str: s,
 	}
 }

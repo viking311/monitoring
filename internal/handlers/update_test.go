@@ -7,12 +7,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
-	"github.com/viking311/monitoring/internal/entity"
+	"github.com/viking311/monitoring/internal/storage"
 )
 
 func TestUpdateHandler_ServeHTTP(t *testing.T) {
-	ch := make(chan entity.MetricEntityInterface, 100)
-	handlerClass := NewUpdateHandler(ch)
+	// ch := make(chan entity.MetricEntityInterface, 100)
+	s := storage.NewInMemoryStorage()
+	handlerClass := NewUpdateHandler(s)
 	r := chi.NewRouter()
 	r.Post("/update/{type}/{name}/{value}", handlerClass.ServeHTTP)
 	ts := httptest.NewServer(r)
@@ -41,7 +42,6 @@ func TestUpdateHandler_ServeHTTP(t *testing.T) {
 			args: args{
 				url:    ts.URL + "/update/counter/1",
 				method: http.MethodPost,
-				// r: httptest.NewRequest(http.MethodPost, ts.URL+"/update/counter/1", nil),
 			},
 			want: http.StatusNotFound,
 		},
@@ -91,9 +91,6 @@ func TestUpdateHandler_ServeHTTP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			code, _ := sendTestRequest(t, tt.args.method, tt.args.url)
 			assert.Equal(t, tt.want, code)
-			if code == http.StatusOK {
-				<-ch
-			}
 		})
 	}
 }

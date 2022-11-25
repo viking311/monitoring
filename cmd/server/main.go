@@ -6,16 +6,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/viking311/monitoring/internal/entity"
 	"github.com/viking311/monitoring/internal/handlers"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
 func main() {
-	c := make(chan entity.MetricEntityInterface, 100)
 	s := storage.NewInMemoryStorage()
-	saver := storage.NewSaver(c, s)
-	go saver.Go()
 
 	r := chi.NewRouter()
 
@@ -27,7 +23,7 @@ func main() {
 
 	r.Get("/", getListHandler.ServeHTTP)
 
-	updateHandler := handlers.NewUpdateHandler(c)
+	updateHandler := handlers.NewUpdateHandler(s)
 	r.Post("/update/{type}/{name}/{value}", updateHandler.ServeHTTP)
 
 	valueHandler := handlers.NewGetValueHandler(s)
