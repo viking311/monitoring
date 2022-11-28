@@ -59,7 +59,7 @@ func (gme *GaugeMetricEntity) GetShortTypeName() string {
 func (gme *GaugeMetricEntity) GetMetricsEntity() Metrics {
 	return Metrics{
 		ID:    gme.Name,
-		MType: "guage",
+		MType: "gauge",
 		Value: &gme.Value,
 	}
 }
