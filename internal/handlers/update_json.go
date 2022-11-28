@@ -57,7 +57,15 @@ func (juh JsonUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotImplemented)
 		return
 	}
-
+	val := juh.str.GetByKey(strings.ToLower(metricEntity.ID))
+	if val != nil {
+		body, err := json.Marshal(val.GetMetricsEntity())
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Write(body)
+	}
 }
 
 func NewJsonUpdateHandler(s storage.Repository) *JsonUpdateHandler {
