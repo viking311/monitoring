@@ -18,6 +18,7 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	// r.Use(middleware.RedirectSlashes)
 
 	getListHandler := handlers.NewGetListHandler(s)
 
@@ -25,6 +26,10 @@ func main() {
 
 	updateHandler := handlers.NewUpdateHandler(s)
 	r.Post("/update/{type}/{name}/{value}", updateHandler.ServeHTTP)
+
+	jsonUpdateHandler := handlers.NewJsonUpdateHandler(s)
+	r.Post("/update", jsonUpdateHandler.ServeHTTP)
+	r.Post("/update/", jsonUpdateHandler.ServeHTTP)
 
 	valueHandler := handlers.NewGetValueHandler(s)
 	r.Get("/value/{type}/{name}", valueHandler.ServeHTTP)
