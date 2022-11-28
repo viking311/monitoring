@@ -28,11 +28,13 @@ func main() {
 	r.Post("/update/{type}/{name}/{value}", updateHandler.ServeHTTP)
 
 	jsonUpdateHandler := handlers.NewJsonUpdateHandler(s)
-	r.Post("/update", jsonUpdateHandler.ServeHTTP)
 	r.Post("/update/", jsonUpdateHandler.ServeHTTP)
 
 	valueHandler := handlers.NewGetValueHandler(s)
 	r.Get("/value/{type}/{name}", valueHandler.ServeHTTP)
+
+	jsonValueHandler := handlers.NewGetJsonValueHandler(s)
+	r.Post("/value/", jsonValueHandler.ServeHTTP)
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
