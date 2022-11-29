@@ -109,6 +109,9 @@ func (mec *MetricEntityCollection) UpdateMetric(stat runtime.MemStats) {
 	mec.Collection["StackSys"] = &GaugeMetricEntity{Name: "StackSys", Value: float64(stat.StackSys)}
 	mec.Collection["Sys"] = &GaugeMetricEntity{Name: "Sys", Value: float64(stat.Sys)}
 	mec.Collection["TotalAlloc"] = &GaugeMetricEntity{Name: "TotalAlloc", Value: float64(stat.TotalAlloc)}
+	mec.Collection["LastGC"] = &GaugeMetricEntity{Name: "LastGC", Value: float64(stat.LastGC)}
+	mec.Collection["Lookups"] = &GaugeMetricEntity{Name: "Lookups", Value: float64(stat.Lookups)}
+	mec.Collection["MSpanInuse"] = &GaugeMetricEntity{Name: "MSpanInuse", Value: float64(stat.MSpanInuse)}
 	mec.Collection["RandomValue"] = &GaugeMetricEntity{Name: "RandomValue", Value: rand.Float64()}
 
 	if _, ok := mec.Collection["PollCount"]; ok {

@@ -41,6 +41,9 @@ func TestMetricEntityCollection_UpdateMetric(t *testing.T) {
 	stat.StackSys = 1
 	stat.Sys = 1
 	stat.TotalAlloc = 1
+	stat.LastGC = 1
+	stat.Lookups = 1
+	stat.MSpanInuse = 1
 
 	tests := []struct {
 		name string
@@ -60,7 +63,7 @@ func TestMetricEntityCollection_UpdateMetric(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mec.UpdateMetric(tt.args.stat)
-			assert.Equal(t, 26, len(tt.mec.Collection), "too few metrics")
+			assert.Equal(t, 29, len(tt.mec.Collection), "too few metrics")
 			fmt.Println(tt.mec.Collection)
 			_, ok := tt.mec.Collection["RandomValue"]
 			assert.Equal(t, true, ok)
@@ -98,6 +101,9 @@ func getUpdateResult() *MetricEntityCollection {
 	mce.Collection["StackSys"] = &GaugeMetricEntity{Name: "StackSys", Value: float64(1)}
 	mce.Collection["Sys"] = &GaugeMetricEntity{Name: "Sys", Value: float64(1)}
 	mce.Collection["TotalAlloc"] = &GaugeMetricEntity{Name: "TotalAlloc", Value: float64(1)}
+	mce.Collection["LastGC"] = &GaugeMetricEntity{Name: "LastGC", Value: float64(1)}
+	mce.Collection["Lookups"] = &GaugeMetricEntity{Name: "Lookups", Value: float64(1)}
+	mce.Collection["MSpanInuse"] = &GaugeMetricEntity{Name: "MSpanInuse", Value: float64(1)}
 	mce.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: uint64(1)}
 
 	return &mce
@@ -132,6 +138,9 @@ func TestMetricEntityCollection_UpdateMetric_counterUpdate(t *testing.T) {
 	stat.StackSys = 1
 	stat.Sys = 1
 	stat.TotalAlloc = 1
+	stat.LastGC = 1
+	stat.Lookups = 1
+	stat.MSpanInuse = 1
 
 	mec.UpdateMetric(stat)
 	mec.UpdateMetric(stat)

@@ -30,6 +30,7 @@ func (c *Collector) sendReport() {
 	for _, metric := range c.statCollection.Collection {
 		go c.sendStatRequest(metric.GetUpdateURI(), metric.GetStringValue())
 	}
+	c.statCollection.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 0}
 }
 
 func (c *Collector) sendStatRequest(uri string, value string) {

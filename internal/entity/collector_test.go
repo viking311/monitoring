@@ -42,6 +42,9 @@ func TestCollector_sendReport(t *testing.T) {
 	stat.StackSys = 1
 	stat.Sys = 1
 	stat.TotalAlloc = 1
+	stat.LastGC = 1
+	stat.Lookups = 1
+	stat.MSpanInuse = 1
 
 	collector.stat = stat
 	collector.sendReport()
@@ -56,6 +59,6 @@ func TestCollector_sendReport(t *testing.T) {
 		}
 		requestCount++
 	}
-	assert.Equal(t, 26, requestCount)
+	assert.Equal(t, 29, requestCount)
 	assert.Equal(t, true, isAllRequestPost)
 }
