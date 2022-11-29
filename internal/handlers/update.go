@@ -11,7 +11,7 @@ import (
 )
 
 type UpdateHandler struct {
-	str storage.Repository
+	Server
 }
 
 func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Name:  metricName,
 			Value: mValue,
 		}
-		uh.str.Update(&entity)
+		uh.storage.Update(&entity)
 
 	case "counter":
 		mValue, err := strconv.ParseUint(metricValue, 10, 64)
@@ -48,7 +48,7 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Name:  metricName,
 			Value: mValue,
 		}
-		uh.str.Update(&entity)
+		uh.storage.Update(&entity)
 	default:
 		w.WriteHeader(http.StatusNotImplemented)
 		return
@@ -56,8 +56,10 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func NewUpdateHandler(s storage.Repository) UpdateHandler {
-	return UpdateHandler{
-		str: s,
+func NewUpdateHandler(s storage.Repository) *UpdateHandler {
+	return &UpdateHandler{
+		Server: Server{
+			storage: s,
+		},
 	}
 }

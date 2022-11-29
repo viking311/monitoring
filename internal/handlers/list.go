@@ -7,7 +7,7 @@ import (
 )
 
 type GetListHandler struct {
-	storage storage.Repository
+	Server
 }
 
 func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -22,8 +22,10 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(body))
 }
 
-func NewGetListHandler(s storage.Repository) GetListHandler {
-	return GetListHandler{
-		storage: s,
+func NewGetListHandler(s storage.Repository) *GetListHandler {
+	return &GetListHandler{
+		Server: Server{
+			storage: s,
+		},
 	}
 }

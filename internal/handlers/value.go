@@ -9,7 +9,7 @@ import (
 )
 
 type GetValueHandler struct {
-	storage storage.Repository
+	Server
 }
 
 func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -36,8 +36,10 @@ func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewGetValueHandler(s storage.Repository) GetValueHandler {
-	return GetValueHandler{
-		storage: s,
+func NewGetValueHandler(s storage.Repository) *GetValueHandler {
+	return &GetValueHandler{
+		Server: Server{
+			storage: s,
+		},
 	}
 }
