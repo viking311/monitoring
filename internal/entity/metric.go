@@ -14,6 +14,14 @@ type MetricEntityInterface interface {
 	GetKey() string
 	GetStringValue() string
 	GetShortTypeName() string
+	GetMetricEntity() Metrics
+}
+
+type Metrics struct {
+	ID    string   `json:"id"`              // имя метрики
+	MType string   `json:"type"`            // параметр, принимающий значение gauge или counter
+	Delta *uint64  `json:"delta,omitempty"` // значение метрики в случае передачи counter
+	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
 }
 
 type GaugeMetricEntity struct {
@@ -22,7 +30,7 @@ type GaugeMetricEntity struct {
 }
 
 func (gme *GaugeMetricEntity) GetUpdateURI() string {
-	return fmt.Sprintf("/update/gauge/%s/%f", gme.Name, gme.Value)
+	return "/update/"
 }
 
 func (gme *GaugeMetricEntity) GetValue() interface{} {
@@ -46,6 +54,14 @@ func (gme *GaugeMetricEntity) GetStringValue() string {
 
 func (gme *GaugeMetricEntity) GetShortTypeName() string {
 	return "gauge"
+}
+
+func (gme *GaugeMetricEntity) GetMetricEntity() Metrics {
+	return Metrics{
+		ID:    gme.Name,
+		MType: gme.GetShortTypeName(),
+		Value: &gme.Value,
+	}
 }
 
 type CounterMetricEntity struct {
@@ -78,6 +94,14 @@ func (cme *CounterMetricEntity) GetStringValue() string {
 
 func (cme *CounterMetricEntity) GetShortTypeName() string {
 	return "counter"
+}
+
+func (cme *CounterMetricEntity) GetMetricEntity() Metrics {
+	return Metrics{
+		ID:    cme.Name,
+		MType: cme.GetShortTypeName(),
+		Delta: &cme.Value,
+	}
 }
 
 type MetricEntityCollection struct {
