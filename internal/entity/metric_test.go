@@ -223,7 +223,7 @@ func TestGaugeMetricEntity_GetKey(t *testing.T) {
 				Name:  "guageMetric",
 				Value: 1,
 			},
-			want: "guageMetric",
+			want: "guagemetric",
 		},
 	}
 	for _, tt := range tests {
