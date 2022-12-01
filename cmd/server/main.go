@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/viking311/monitoring/internal/handlers"
+	"github.com/viking311/monitoring/internal/server"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
@@ -36,5 +37,6 @@ func main() {
 	jsonValueHandler := handlers.NewJSONValueHAndler(s)
 	r.Post("/value/", jsonValueHandler.ServeHTTP)
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	cfg := server.ReadConfig()
+	log.Fatal(http.ListenAndServe(cfg.Address, r))
 }
