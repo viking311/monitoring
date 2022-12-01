@@ -16,13 +16,6 @@ type UpdatePlainTextHandler struct {
 
 func (uh UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	contentType := r.Header.Get("Content-Type")
-
-	if contentType != "text/plain" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	typeName := strings.ToLower(chi.URLParam(r, "type"))
 	metricName := chi.URLParam(r, "name")
 	metricValue := chi.URLParam(r, "value")
