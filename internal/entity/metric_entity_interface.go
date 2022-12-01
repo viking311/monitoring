@@ -8,4 +8,5 @@ type MetricEntityInterface interface {
 	GetStringValue() string
 	GetShortTypeName() string
 	GetMetricEntity() Metrics
+	GetName() string
 }

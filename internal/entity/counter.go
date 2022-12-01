@@ -44,3 +44,7 @@ func (cme *CounterMetricEntity) GetMetricEntity() Metrics {
 		Delta: &cme.Value,
 	}
 }
+
+func (cme *CounterMetricEntity) GetName() string {
+	return cme.Name
+}

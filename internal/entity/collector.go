@@ -40,7 +40,7 @@ func (c *Collector) sendStatRequest(uri string, value string) {
 	if err != nil {
 		return
 	}
-	request.Header.Set("application-type", "text/plain")
+	request.Header.Set("Content-Type", "text/plain")
 
 	client := &http.Client{}
 	resp, clientErr := client.Do(request)

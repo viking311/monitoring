@@ -23,7 +23,8 @@ func main() {
 
 	r.Get("/", getListHandler.ServeHTTP)
 
-	updateHandler := handlers.NewUpdateHandler(s)
+	updateHandler := handlers.NewUpdatePlainTextHandler(s)
+	// updateHandler := handlers.NewUpdateHandler(s)
 	r.Post("/update/{type}/{name}/{value}", updateHandler.ServeHTTP)
 
 	jsonUpdateHandler := handlers.NewJSONUpdateHandler(s)

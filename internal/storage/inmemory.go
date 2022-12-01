@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/viking311/monitoring/internal/entity"
@@ -22,8 +23,6 @@ func (ims *InMemoryStorage) Update(value entity.MetricEntityInterface) {
 	ims.mx.Lock()
 	defer ims.mx.Unlock()
 	item, ok := ims.data[value.GetKey()]
-	// item := ims.GetByKey(value.GetKey())
-	//
 	if ok {
 		item.SetValue(value.GetValue())
 		ims.data[value.GetKey()] = item
@@ -41,7 +40,7 @@ func (ims *InMemoryStorage) Delete(key string) {
 func (ims *InMemoryStorage) GetByKey(key string) entity.MetricEntityInterface {
 	ims.mx.RLock()
 	defer ims.mx.RUnlock()
-	value, ok := ims.data[key]
+	value, ok := ims.data[strings.ToLower(key)]
 	if ok {
 		return value
 	} else {

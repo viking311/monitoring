@@ -45,3 +45,7 @@ func (gme *GaugeMetricEntity) GetMetricEntity() Metrics {
 		Value: &gme.Value,
 	}
 }
+
+func (gme *GaugeMetricEntity) GetName() string {
+	return gme.Name
+}

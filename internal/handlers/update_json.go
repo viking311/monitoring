@@ -14,11 +14,19 @@ type JSONUpdateHandler struct {
 }
 
 func (juh JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	contentType := r.Header.Get("Content-Type")
+
+	if contentType != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
 	var metr entity.Metrics
 
 	err = json.Unmarshal(body, &metr)
