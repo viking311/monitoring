@@ -11,7 +11,8 @@ type CounterMetricEntity struct {
 }
 
 func (cme *CounterMetricEntity) GetUpdateURI() string {
-	return fmt.Sprintf("/update/counter/%s/%d", cme.Name, cme.Value)
+	// return fmt.Sprintf("/update/counter/%s/%d", cme.Name, cme.Value)
+	return "/update/"
 }
 
 func (cme *CounterMetricEntity) GetValue() interface{} {

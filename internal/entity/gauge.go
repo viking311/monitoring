@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -12,7 +11,8 @@ type GaugeMetricEntity struct {
 }
 
 func (gme *GaugeMetricEntity) GetUpdateURI() string {
-	return fmt.Sprintf("/update/gauge/%s/%f", gme.Name, gme.Value)
+	// return fmt.Sprintf("/update/gauge/%s/%f", gme.Name, gme.Value)
+	return "/update/"
 }
 
 func (gme *GaugeMetricEntity) GetValue() interface{} {
