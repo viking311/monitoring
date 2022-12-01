@@ -33,5 +33,8 @@ func main() {
 	valueHandler := handlers.NewGetValueHandler(s)
 	r.Get("/value/{type}/{name}", valueHandler.ServeHTTP)
 
+	jsonValueHandler := handlers.NewJSONValueHAndler(s)
+	r.Post("/value/", jsonValueHandler.ServeHTTP)
+
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
