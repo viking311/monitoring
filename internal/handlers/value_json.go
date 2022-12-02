@@ -36,13 +36,13 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	val := jvh.storage.GetByKey(metr.ID)
-	if val == nil {
+	val, err := jvh.storage.GetByKey(metr.ID)
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	} else {
-		if val.GetShortTypeName() == metr.MType {
-			respBody, err := json.Marshal(val.GetMetricEntity())
+		if val.MType == metr.MType {
+			respBody, err := json.Marshal(val)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return

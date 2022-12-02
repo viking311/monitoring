@@ -25,6 +25,14 @@ func (uh UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	if typeName != "gauge" && typeName != "counter" {
+		w.WriteHeader(http.StatusNotImplemented)
+		return
+	}
+	metric := entity.Metrics{
+		ID:    metricName,
+		MType: typeName,
+	}
 	switch typeName {
 	case "gauge":
 		mValue, err := strconv.ParseFloat(metricValue, 64)
@@ -32,11 +40,7 @@ func (uh UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		entity := entity.GaugeMetricEntity{
-			Name:  metricName,
-			Value: mValue,
-		}
-		uh.storage.Update(&entity)
+		metric.Value = &mValue
 
 	case "counter":
 		mValue, err := strconv.ParseUint(metricValue, 10, 64)
@@ -44,16 +48,9 @@ func (uh UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		entity := entity.CounterMetricEntity{
-			Name:  metricName,
-			Value: mValue,
-		}
-		uh.storage.Update(&entity)
-	default:
-		w.WriteHeader(http.StatusNotImplemented)
-		return
+		metric.Delta = &mValue
 	}
-
+	uh.storage.Update(metric)
 }
 
 func NewUpdatePlainTextHandler(s storage.Repository) *UpdatePlainTextHandler {
