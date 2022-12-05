@@ -9,8 +9,9 @@ import (
 )
 
 type InMemoryStorage struct {
-	data map[string]entity.Metrics
-	mx   sync.RWMutex
+	data   map[string]entity.Metrics
+	mx     sync.RWMutex
+	upChan UpdateChannel
 }
 
 func (ims *InMemoryStorage) Update(value entity.Metrics) {
@@ -26,6 +27,10 @@ func (ims *InMemoryStorage) Update(value entity.Metrics) {
 		}
 	} else if value.MType == "gauge" && value.Value != nil {
 		ims.data[value.GetKey()] = value
+	}
+	select {
+	case ims.upChan <- struct{}{}:
+	default:
 	}
 }
 
@@ -55,15 +60,31 @@ func (ims *InMemoryStorage) GetAll() []entity.Metrics {
 	i := 0
 	for _, item := range ims.data {
 		slice[i] = item
+
+		if slice[i].Delta != nil {
+			delta := *slice[i].Delta
+			slice[i].Delta = &delta
+		}
+
+		if slice[i].Value != nil {
+			value := *slice[i].Value
+			slice[i].Value = &value
+		}
+
 		i++
 	}
 
 	return slice
 }
 
+func (ims *InMemoryStorage) GetUpdateChannal() UpdateChannel {
+	return ims.upChan
+}
+
 func NewInMemoryStorage() *InMemoryStorage {
 	return &InMemoryStorage{
-		data: make(map[string]entity.Metrics),
-		mx:   sync.RWMutex{},
+		data:   make(map[string]entity.Metrics),
+		mx:     sync.RWMutex{},
+		upChan: make(UpdateChannel),
 	}
 }

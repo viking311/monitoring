@@ -12,7 +12,24 @@ import (
 )
 
 func main() {
+	cfg := server.ReadConfig()
+
 	s := storage.NewInMemoryStorage()
+
+	if len(cfg.StoreFile) > 0 {
+		sw, err := storage.NewSnapshotWriter(s, cfg.StoreFile, cfg.StoreInterval)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer sw.Close()
+
+		if cfg.Restore {
+			sw.Load()
+		}
+
+		go sw.Receive()
+
+	}
 
 	r := chi.NewRouter()
 
@@ -37,6 +54,5 @@ func main() {
 	jsonValueHandler := handlers.NewJSONValueHAndler(s)
 	r.Post("/value/", jsonValueHandler.ServeHTTP)
 
-	cfg := server.ReadConfig()
 	log.Fatal(http.ListenAndServe(cfg.Address, r))
 }
