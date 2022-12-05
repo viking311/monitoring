@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	DEFAULT_ADDRESS        = "localhost:8080"
-	DEFAULT_STORE_INTERVAL = 300 * time.Second
-	DEFAULT_STORE_FILE     = "/tmp/devops-metrics-db.json"
-	DEFAULT_RESTORE        = true
+	DefaultAddress       = "localhost:8080"
+	DefaultStoreInterval = 300 * time.Second
+	DefaultStoreFile     = "/tmp/devops-metrics-db.json"
+	DefaultRestore       = true
 )
 
 type ServerConfig struct {
@@ -25,10 +25,10 @@ type ServerConfig struct {
 var Config ServerConfig
 
 func init() {
-	addressFlag := flag.String("a", DEFAULT_ADDRESS, "address to listen")
-	restoreFlag := flag.Bool("r", DEFAULT_RESTORE, "restore data from file")
-	storeInterval := flag.Duration("i", DEFAULT_STORE_INTERVAL, "how often store data to file")
-	storeFile := flag.String("f", DEFAULT_STORE_FILE, "name of file for storing")
+	addressFlag := flag.String("a", DefaultAddress, "address to listen")
+	restoreFlag := flag.Bool("r", DefaultRestore, "restore data from file")
+	storeInterval := flag.Duration("i", DefaultStoreInterval, "how often store data to file")
+	storeFile := flag.String("f", DefaultStoreFile, "name of file for storing")
 	flag.Parse()
 
 	if err := env.Parse(&Config); err != nil {
