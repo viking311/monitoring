@@ -6,8 +6,7 @@ import (
 )
 
 func main() {
-	cfg := agent.ReadConfig()
-	collector := entity.NewCollector("http://"+cfg.Address, cfg.PollInterval, cfg.ReportInterval)
+	collector := entity.NewCollector("http://"+*agent.Config.Address, *agent.Config.PollInterval, *agent.Config.ReportInterval)
 
 	collector.Do()
 

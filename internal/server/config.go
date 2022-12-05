@@ -1,25 +1,53 @@
 package server
 
 import (
-	"os"
+	"flag"
+	"log"
 	"time"
 
 	"github.com/caarlos0/env/v6"
 )
 
+const (
+	DEFAULT_ADDRESS        = "localhost:8080"
+	DEFAULT_STORE_INTERVAL = 300 * time.Second
+	DEFAULT_STORE_FILE     = "/tmp/devops-metrics-db.json"
+	DEFAULT_RESTORE        = true
+)
+
 type ServerConfig struct {
-	Address       string        `env:"ADDRESS" envDefault:"localhost:8080"`
-	StoreInterval time.Duration `env:"STORE_INTERVAL" envDefault:"300s"`
-	StoreFile     string        `env:"STORE_FILE" envDefault:"/tmp/devops-metrics-db.json"`
-	Restore       bool          `env:"RESTORE" envDefault:"true"`
+	Address       *string        `env:"ADDRESS"`
+	StoreInterval *time.Duration `env:"STORE_INTERVAL"`
+	StoreFile     *string        `env:"STORE_FILE"`
+	Restore       *bool          `env:"RESTORE"`
 }
 
-func ReadConfig() *ServerConfig {
-	cfg := ServerConfig{}
+var Config ServerConfig
 
-	if err := env.Parse(&cfg); err != nil {
-		os.Exit(1)
+func init() {
+	addressFlag := flag.String("a", DEFAULT_ADDRESS, "address to listen")
+	restoreFlag := flag.Bool("r", DEFAULT_RESTORE, "restore data from file")
+	storeInterval := flag.Duration("i", DEFAULT_STORE_INTERVAL, "how often store data to file")
+	storeFile := flag.String("f", DEFAULT_STORE_FILE, "name of file for storing")
+	flag.Parse()
+
+	if err := env.Parse(&Config); err != nil {
+		log.Fatal(err)
 	}
 
-	return &cfg
+	if Config.Address == nil {
+		Config.Address = addressFlag
+	}
+
+	if Config.Restore == nil {
+		Config.Restore = restoreFlag
+	}
+
+	if Config.StoreFile == nil {
+		Config.StoreFile = storeFile
+	}
+
+	if Config.StoreInterval == nil {
+		Config.StoreInterval = storeInterval
+	}
 }
