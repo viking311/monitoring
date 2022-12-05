@@ -17,7 +17,7 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		body += "<tr><td>" + v.ID + "</td><td>" + v.GetStringValue() + "</td></tr>"
 	}
 	body += "</table></body></html>"
-	w.Header().Add("application-type", "text/html")
+	w.Header().Add("Content-Type", "text/html")
 	w.Write([]byte(body))
 }
 
