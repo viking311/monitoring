@@ -35,13 +35,13 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(server.Gzip)
+	r.Use(server.UnGzip)
 
 	getListHandler := handlers.NewGetListHandler(s)
-
 	r.Get("/", getListHandler.ServeHTTP)
 
 	updateHandler := handlers.NewUpdatePlainTextHandler(s)
-	// updateHandler := handlers.NewUpdateHandler(s)
 	r.Post("/update/{type}/{name}/{value}", updateHandler.ServeHTTP)
 
 	jsonUpdateHandler := handlers.NewJSONUpdateHandler(s)
