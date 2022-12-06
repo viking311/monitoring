@@ -12,12 +12,14 @@ const (
 	DefaultAddress        = "localhost:8080"
 	DefaultReportInterval = 10 * time.Second
 	DefaultPollInterval   = 2 * time.Second
+	DefaultHashKey        = ""
 )
 
 type AgentConfig struct {
 	Address        *string        `env:"ADDRESS"`
 	ReportInterval *time.Duration `env:"REPORT_INTERVAL"`
 	PollInterval   *time.Duration `env:"POLL_INTERVAL"`
+	HashKey        *string        `env:"KEY"`
 }
 
 var Config AgentConfig
@@ -26,6 +28,7 @@ func init() {
 	addressFlag := flag.String("a", DefaultAddress, "address to send metrics")
 	reportInterval := flag.Duration("r", DefaultReportInterval, "how often send report to server")
 	pollInterval := flag.Duration("p", DefaultPollInterval, "how often update metrics")
+	hashKey := flag.String("k", DefaultHashKey, "hash key")
 	flag.Parse()
 
 	if err := env.Parse(&Config); err != nil {
@@ -42,5 +45,9 @@ func init() {
 
 	if Config.PollInterval == nil {
 		Config.PollInterval = pollInterval
+	}
+
+	if Config.HashKey == nil {
+		Config.HashKey = hashKey
 	}
 }

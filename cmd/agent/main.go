@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	collector := entity.NewCollector("http://"+*agent.Config.Address, *agent.Config.PollInterval, *agent.Config.ReportInterval)
+	collector := entity.NewCollector("http://"+*agent.Config.Address, *agent.Config.PollInterval, *agent.Config.ReportInterval, *agent.Config.HashKey)
 
 	collector.Do()
 

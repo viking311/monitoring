@@ -2,7 +2,11 @@ package entity
 
 import (
 	"bytes"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"runtime"
@@ -22,6 +26,7 @@ type Collector struct {
 	stat           runtime.MemStats
 	signals        signals.SignalListener
 	mtx            sync.RWMutex
+	hashKey        string
 }
 
 func (c *Collector) sendReport() {
@@ -35,18 +40,17 @@ func (c *Collector) sendReport() {
 }
 
 func (c *Collector) sendStatRequest(uri string, value Metrics) {
+	c.calculateHash(&value)
 	bytesValue, err := json.Marshal(value)
 	if err != nil {
 		return
 	}
 
-	// bytesValue := []byte(value)
 	reader := bytes.NewReader(bytesValue)
 	request, err := http.NewRequest(http.MethodPost, c.endpoint+uri, reader)
 	if err != nil {
 		return
 	}
-	// request.Header.Set("Content-Type", "text/plain")
 	request.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -63,6 +67,25 @@ func (c *Collector) updateStat() {
 
 	runtime.ReadMemStats(&c.stat)
 	c.statCollection.UpdateMetric(c.stat)
+}
+
+func (c *Collector) calculateHash(data *Metrics) {
+	if len(c.hashKey) > 0 {
+		src := ""
+		hasher := hmac.New(sha256.New, []byte(c.hashKey))
+		if data.MType == "counter" {
+			src = fmt.Sprintf("%s:counter:%d", data.ID, data.Delta)
+		}
+
+		if data.MType == "gauge" {
+			src = fmt.Sprintf("%s:gauge:%f", data.ID, *data.Value)
+		}
+		if len(src) > 0 {
+			hasher.Write([]byte(src))
+			data.Hash = hex.EncodeToString(hasher.Sum(nil))
+		}
+
+	}
 }
 
 func (c *Collector) Do() {
@@ -88,7 +111,7 @@ func (c *Collector) Do() {
 
 }
 
-func NewCollector(endpoint string, pollInterval time.Duration, reportInterval time.Duration) *Collector {
+func NewCollector(endpoint string, pollInterval time.Duration, reportInterval time.Duration, hashKey string) *Collector {
 	var collector = Collector{
 		endpoint:       strings.TrimSuffix(endpoint, "/"),
 		pollInterval:   pollInterval,
@@ -97,6 +120,7 @@ func NewCollector(endpoint string, pollInterval time.Duration, reportInterval ti
 		stat:           runtime.MemStats{},
 		signals:        signals.NewSignalListener(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT),
 		mtx:            sync.RWMutex{},
+		hashKey:        hashKey,
 	}
 
 	collector.updateStat()
