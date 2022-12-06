@@ -13,12 +13,13 @@ func MetricsHash(data Metrics, hashKey string) string {
 		src := ""
 		hasher := hmac.New(sha256.New, []byte(hashKey))
 		if data.MType == "counter" {
-			src = fmt.Sprintf("%s:counter:%d", data.ID, data.Delta)
+			src = fmt.Sprintf("%s:counter:%d", data.ID, *data.Delta)
 		}
 
 		if data.MType == "gauge" {
 			src = fmt.Sprintf("%s:gauge:%f", data.ID, *data.Value)
 		}
+		fmt.Println(src)
 		if len(src) > 0 {
 			hasher.Write([]byte(src))
 			hash = hex.EncodeToString(hasher.Sum(nil))
