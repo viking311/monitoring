@@ -42,6 +42,7 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		if val.MType == metr.MType {
+			val.Hash = entity.MetricsHash(val, jvh.hashKey)
 			respBody, err := json.Marshal(val)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
@@ -55,10 +56,11 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewJSONValueHAndler(s storage.Repository) *JSONValueHAndler {
+func NewJSONValueHandler(s storage.Repository, hashKey string) *JSONValueHAndler {
 	return &JSONValueHAndler{
 		Server: Server{
 			storage: s,
+			hashKey: hashKey,
 		},
 	}
 }

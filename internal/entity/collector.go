@@ -2,11 +2,7 @@ package entity
 
 import (
 	"bytes"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"runtime"
@@ -40,7 +36,7 @@ func (c *Collector) sendReport() {
 }
 
 func (c *Collector) sendStatRequest(uri string, value Metrics) {
-	c.calculateHash(&value)
+	value.Hash = MetricsHash(value, c.hashKey)
 	bytesValue, err := json.Marshal(value)
 	if err != nil {
 		return
@@ -67,25 +63,6 @@ func (c *Collector) updateStat() {
 
 	runtime.ReadMemStats(&c.stat)
 	c.statCollection.UpdateMetric(c.stat)
-}
-
-func (c *Collector) calculateHash(data *Metrics) {
-	if len(c.hashKey) > 0 {
-		src := ""
-		hasher := hmac.New(sha256.New, []byte(c.hashKey))
-		if data.MType == "counter" {
-			src = fmt.Sprintf("%s:counter:%d", data.ID, data.Delta)
-		}
-
-		if data.MType == "gauge" {
-			src = fmt.Sprintf("%s:gauge:%f", data.ID, *data.Value)
-		}
-		if len(src) > 0 {
-			hasher.Write([]byte(src))
-			data.Hash = hex.EncodeToString(hasher.Sum(nil))
-		}
-
-	}
 }
 
 func (c *Collector) Do() {

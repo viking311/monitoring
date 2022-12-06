@@ -44,13 +44,13 @@ func main() {
 	updateHandler := handlers.NewUpdatePlainTextHandler(s)
 	r.Post("/update/{type}/{name}/{value}", updateHandler.ServeHTTP)
 
-	jsonUpdateHandler := handlers.NewJSONUpdateHandler(s)
+	jsonUpdateHandler := handlers.NewJSONUpdateHandler(s, *server.Config.HashKey)
 	r.Post("/update/", jsonUpdateHandler.ServeHTTP)
 
 	valueHandler := handlers.NewGetValueHandler(s)
 	r.Get("/value/{type}/{name}", valueHandler.ServeHTTP)
 
-	jsonValueHandler := handlers.NewJSONValueHAndler(s)
+	jsonValueHandler := handlers.NewJSONValueHandler(s, *server.Config.HashKey)
 	r.Post("/value/", jsonValueHandler.ServeHTTP)
 
 	log.Fatal(http.ListenAndServe(*server.Config.Address, r))

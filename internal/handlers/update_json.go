@@ -36,6 +36,13 @@ func (juh JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !juh.verifyMetricsSing(metr) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	metr.Hash = ""
+
 	if metr.MType != "gauge" && metr.MType != "counter" {
 		w.WriteHeader(http.StatusNotImplemented)
 		return
@@ -47,8 +54,10 @@ func (juh JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
-
 	}
+
+	currentValue.Hash = entity.MetricsHash(currentValue, juh.hashKey)
+
 	respBody, err := json.Marshal(currentValue)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -58,10 +67,11 @@ func (juh JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write(respBody)
 }
 
-func NewJSONUpdateHandler(s storage.Repository) *JSONUpdateHandler {
+func NewJSONUpdateHandler(s storage.Repository, hashKey string) *JSONUpdateHandler {
 	return &JSONUpdateHandler{
 		Server: Server{
 			storage: s,
+			hashKey: hashKey,
 		},
 	}
 }
