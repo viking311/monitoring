@@ -14,7 +14,7 @@ type UpdatePlainTextHandler struct {
 	Server
 }
 
-func (uh UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	typeName := strings.ToLower(chi.URLParam(r, "type"))
 	metricName := chi.URLParam(r, "name")
