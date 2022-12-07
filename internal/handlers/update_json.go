@@ -26,6 +26,7 @@ func (juh *JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	defer r.Body.Close()
 
 	var metr entity.Metrics
 
