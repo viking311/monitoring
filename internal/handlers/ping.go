@@ -13,7 +13,7 @@ type PingHandler struct {
 	Server
 }
 
-func (ph PingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (ph *PingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if ph.db == nil {
 		fmt.Println("Db nuil")
 		w.WriteHeader(http.StatusInternalServerError)
