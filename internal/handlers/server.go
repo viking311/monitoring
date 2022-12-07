@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"crypto/hmac"
+	"database/sql"
 	"net/http"
 
 	"github.com/viking311/monitoring/internal/entity"
@@ -11,6 +12,7 @@ import (
 type Server struct {
 	storage storage.Repository
 	hashKey string
+	db      *sql.DB
 }
 
 func (srv Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

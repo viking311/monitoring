@@ -1,17 +1,26 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/lib/pq"
 	"github.com/viking311/monitoring/internal/handlers"
 	"github.com/viking311/monitoring/internal/server"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
 func main() {
+
+	db, err := sql.Open("postgres", *server.Config.DatabaseDsn)
+	if err != nil {
+		log.Println(err)
+	}
+
+	defer db.Close()
 
 	s := storage.NewInMemoryStorage()
 
@@ -52,6 +61,9 @@ func main() {
 
 	jsonValueHandler := handlers.NewJSONValueHandler(s, *server.Config.HashKey)
 	r.Post("/value/", jsonValueHandler.ServeHTTP)
+
+	pingHandler := handlers.NewPingHandler(db)
+	r.Get("/ping", pingHandler.ServeHTTP)
 
 	log.Fatal(http.ListenAndServe(*server.Config.Address, r))
 }

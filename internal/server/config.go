@@ -14,6 +14,7 @@ const (
 	DefaultStoreFile     = "/tmp/devops-metrics-db.json"
 	DefaultRestore       = true
 	DefaultHashKey       = ""
+	DefaultDatabaseDsn   = ""
 )
 
 type ServerConfig struct {
@@ -22,6 +23,7 @@ type ServerConfig struct {
 	StoreFile     *string        `env:"STORE_FILE"`
 	Restore       *bool          `env:"RESTORE"`
 	HashKey       *string        `env:"KEY"`
+	DatabaseDsn   *string        `env:"DATABASE_DSN"`
 }
 
 var Config ServerConfig
@@ -32,6 +34,7 @@ func init() {
 	storeInterval := flag.Duration("i", DefaultStoreInterval, "how often store data to file")
 	storeFile := flag.String("f", DefaultStoreFile, "name of file for storing")
 	hashKey := flag.String("k", DefaultHashKey, "hash key")
+	dbDsn := flag.String("d", DefaultDatabaseDsn, "connection to db")
 	flag.Parse()
 
 	if err := env.Parse(&Config); err != nil {
@@ -56,5 +59,9 @@ func init() {
 
 	if Config.HashKey == nil {
 		Config.HashKey = hashKey
+	}
+
+	if Config.DatabaseDsn == nil {
+		Config.DatabaseDsn = dbDsn
 	}
 }
