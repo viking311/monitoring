@@ -13,7 +13,7 @@ type JSONUpdateHandler struct {
 	Server
 }
 
-func (juh JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (juh *JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 
 	if contentType != "application/json" {
