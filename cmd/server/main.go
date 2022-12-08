@@ -13,14 +13,17 @@ import (
 	"github.com/viking311/monitoring/internal/storage"
 )
 
+var db *sql.DB
+
 func main() {
 
-	db, err := sql.Open("postgres", *server.Config.DatabaseDsn)
-	if err != nil {
-		log.Println(err)
+	if len(*server.Config.DatabaseDsn) > 0 {
+		err := initDb(*server.Config.DatabaseDsn)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
 	}
-
-	defer db.Close()
 
 	s := storage.NewInMemoryStorage()
 
@@ -66,4 +69,15 @@ func main() {
 	r.Get("/ping", pingHandler.ServeHTTP)
 
 	log.Fatal(http.ListenAndServe(*server.Config.Address, r))
+}
+
+func initDb(dsn string) error {
+	var err error
+
+	db, err = sql.Open("postgres", dsn)
+	if err != nil {
+		return err
+	}
+
+	return db.Ping()
 }
