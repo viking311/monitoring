@@ -76,7 +76,7 @@ func (sdw *SnapshotDBWriter) Close() {
 func (sdw *SnapshotDBWriter) dump() {
 	sdw.mx.Lock()
 	defer sdw.mx.Unlock()
-	_, err := sdw.db.Exec("DELETE FROM metrics")
+	_, err := sdw.db.Exec("DELETE FROM viking311_metrics")
 
 	if err != nil {
 		log.Println(err)
