@@ -11,7 +11,7 @@ import (
 	"github.com/viking311/monitoring/internal/entity"
 )
 
-type SnapshotWriter struct {
+type SnapshoFiletWriter struct {
 	store         Repository
 	file          *os.File
 	storeInterval time.Duration
@@ -19,7 +19,7 @@ type SnapshotWriter struct {
 	writer        bufio.Writer
 }
 
-func (sw *SnapshotWriter) Load() {
+func (sw *SnapshoFiletWriter) Load() {
 	scanner := bufio.NewScanner(sw.file)
 	buf := make([]byte, 0, 64*1024)
 	scanner.Buffer(buf, 1024*1024)
@@ -35,12 +35,12 @@ func (sw *SnapshotWriter) Load() {
 	log.Println("data loaded from file " + sw.file.Name())
 }
 
-func (sw *SnapshotWriter) Close() {
+func (sw *SnapshoFiletWriter) Close() {
 	sw.dump()
 	sw.file.Close()
 }
 
-func (sw *SnapshotWriter) Receive() {
+func (sw *SnapshoFiletWriter) Receive() {
 	if sw.storeInterval > 0 {
 		ticker := time.NewTicker(sw.storeInterval)
 		defer ticker.Stop()
@@ -54,7 +54,7 @@ func (sw *SnapshotWriter) Receive() {
 	}
 }
 
-func (sw *SnapshotWriter) dump() {
+func (sw *SnapshoFiletWriter) dump() {
 	sw.mx.Lock()
 	defer sw.mx.Unlock()
 
@@ -73,12 +73,12 @@ func (sw *SnapshotWriter) dump() {
 	log.Println("data stored to file " + sw.file.Name())
 }
 
-func NewSnapshotWriter(storage Repository, fileName string, storeInterval time.Duration) (*SnapshotWriter, error) {
+func NewSnapshoFiletWriter(storage Repository, fileName string, storeInterval time.Duration) (*SnapshoFiletWriter, error) {
 	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0777)
 	if err != nil {
 		return nil, err
 	}
-	return &SnapshotWriter{
+	return &SnapshoFiletWriter{
 		store:         storage,
 		file:          file,
 		storeInterval: storeInterval,

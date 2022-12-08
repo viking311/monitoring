@@ -26,20 +26,16 @@ func main() {
 	}
 
 	s := storage.NewInMemoryStorage()
-
-	if len(*server.Config.StoreFile) > 0 {
-		sw, err := storage.NewSnapshotWriter(s, *server.Config.StoreFile, *server.Config.StoreInterval)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer sw.Close()
-
+	sw, err := storage.NewSpashotWriter(s, *server.Config.StoreFile, *server.Config.StoreInterval)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if sw != nil {
 		if *server.Config.Restore {
 			sw.Load()
 		}
 
 		go sw.Receive()
-
 	}
 
 	r := chi.NewRouter()
