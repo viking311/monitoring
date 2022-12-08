@@ -25,37 +25,20 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		}
-		if db != nil {
-			defer db.Close()
-
-			sdw, err := storage.NewSnapshotDbWriter(db, s, *server.Config.StoreInterval)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			defer sdw.Close()
-
-			if *server.Config.Restore {
-				sdw.Load()
-			}
-
-			go sdw.Receive()
-		}
+		defer db.Close()
 	}
 
-	if len(*server.Config.StoreFile) > 0 && db == nil {
-		sw, err := storage.NewSnapshotWriter(s, *server.Config.StoreFile, *server.Config.StoreInterval)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer sw.Close()
+	sw, err := storage.NewSnapshotInstance(&server.Config, db, s)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	if sw != nil {
+		defer sw.Close()
 		if *server.Config.Restore {
 			sw.Load()
 		}
-
 		go sw.Receive()
-
 	}
 
 	r := chi.NewRouter()
