@@ -46,7 +46,13 @@ func (sdw *SnapshotDbWriter) Load() {
 		}
 		sdw.store.Update(metric)
 	}
-	log.Println("data loaded from db")
+	err = rows.Err()
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println("data loaded from db")
+	}
+
 }
 
 func (sdw *SnapshotDbWriter) Receive() {
