@@ -17,7 +17,7 @@ var db *sql.DB
 
 func main() {
 	if len(*server.Config.DatabaseDsn) > 0 {
-		err := initDb(*server.Config.DatabaseDsn)
+		err := initDB(*server.Config.DatabaseDsn)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -66,7 +66,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(*server.Config.Address, r))
 }
 
-func initDb(dsn string) error {
+func initDB(dsn string) error {
 	var err error
 
 	db, err = sql.Open("postgres", dsn)

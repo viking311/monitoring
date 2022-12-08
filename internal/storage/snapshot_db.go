@@ -10,14 +10,14 @@ import (
 	"github.com/viking311/monitoring/internal/entity"
 )
 
-type SnapshotDbWriter struct {
+type SnapshotDBWriter struct {
 	db            *sql.DB
 	store         Repository
 	storeInterval time.Duration
 	mx            sync.Mutex
 }
 
-func (sdw *SnapshotDbWriter) Load() {
+func (sdw *SnapshotDBWriter) Load() {
 	rows, err := sdw.db.Query("SELECT metric_id, metric_type,metric_delta, metric_value FROM viking311_metrics")
 	if err != nil {
 		log.Println(err)
@@ -55,7 +55,7 @@ func (sdw *SnapshotDbWriter) Load() {
 
 }
 
-func (sdw *SnapshotDbWriter) Receive() {
+func (sdw *SnapshotDBWriter) Receive() {
 	if sdw.storeInterval > 0 {
 		ticker := time.NewTicker(sdw.storeInterval)
 		defer ticker.Stop()
@@ -69,11 +69,11 @@ func (sdw *SnapshotDbWriter) Receive() {
 	}
 }
 
-func (sdw *SnapshotDbWriter) Close() {
+func (sdw *SnapshotDBWriter) Close() {
 	sdw.dump()
 }
 
-func (sdw *SnapshotDbWriter) dump() {
+func (sdw *SnapshotDBWriter) dump() {
 	sdw.mx.Lock()
 	defer sdw.mx.Unlock()
 	_, err := sdw.db.Exec("DELETE FROM metrics")
@@ -84,14 +84,14 @@ func (sdw *SnapshotDbWriter) dump() {
 	}
 
 	for _, v := range sdw.store.GetAll() {
-		var delta sql.NullInt64 = sql.NullInt64{}
+		delta := sql.NullInt64{}
 		if v.Delta != nil {
 			delta.Int64 = int64(*v.Delta)
 			delta.Valid = true
 
 		}
 
-		var value sql.NullFloat64 = sql.NullFloat64{}
+		value := sql.NullFloat64{}
 		if v.Value != nil {
 			value.Float64 = *v.Value
 			value.Valid = true
@@ -103,7 +103,7 @@ func (sdw *SnapshotDbWriter) dump() {
 	}
 
 }
-func NewSnapshotDbWriter(db *sql.DB, store Repository, storeInterval time.Duration) (*SnapshotDbWriter, error) {
+func NewSnapshotDBWriter(db *sql.DB, store Repository, storeInterval time.Duration) (*SnapshotDBWriter, error) {
 	if db == nil {
 		return nil, fmt.Errorf("db instance is needed")
 	}
@@ -113,7 +113,7 @@ func NewSnapshotDbWriter(db *sql.DB, store Repository, storeInterval time.Durati
 		return nil, err
 	}
 
-	return &SnapshotDbWriter{
+	return &SnapshotDBWriter{
 		db:            db,
 		store:         store,
 		storeInterval: storeInterval,
