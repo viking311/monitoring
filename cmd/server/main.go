@@ -25,20 +25,22 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		}
-		defer db.Close()
+		if db != nil {
+			defer db.Close()
 
-		sw, err := storage.NewSnapshotDbWriter(db, s, *server.Config.StoreInterval)
-		if err != nil {
-			log.Fatal(err)
+			sdw, err := storage.NewSnapshotDbWriter(db, s, *server.Config.StoreInterval)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			defer sdw.Close()
+
+			if *server.Config.Restore {
+				sdw.Load()
+			}
+
+			go sdw.Receive()
 		}
-
-		defer sw.Close()
-
-		if *server.Config.Restore {
-			sw.Load()
-		}
-
-		go sw.Receive()
 	}
 
 	if len(*server.Config.StoreFile) > 0 && db == nil {
