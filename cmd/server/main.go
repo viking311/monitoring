@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -17,7 +16,6 @@ import (
 var db *sql.DB
 
 func main() {
-	fmt.Print(*server.Config.DatabaseDsn)
 	if len(*server.Config.DatabaseDsn) > 0 {
 		err := initDb(*server.Config.DatabaseDsn)
 		if err != nil {

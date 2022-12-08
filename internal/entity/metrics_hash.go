@@ -19,7 +19,6 @@ func MetricsHash(data Metrics, hashKey string) string {
 		if data.MType == "gauge" {
 			src = fmt.Sprintf("%s:gauge:%f", data.ID, *data.Value)
 		}
-		fmt.Println(src)
 		if len(src) > 0 {
 			hasher.Write([]byte(src))
 			hash = hex.EncodeToString(hasher.Sum(nil))
