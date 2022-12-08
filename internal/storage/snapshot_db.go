@@ -18,7 +18,7 @@ type SnapshotDBWriter struct {
 }
 
 func (sdw *SnapshotDBWriter) Load() {
-	rows, err := sdw.db.Query("SELECT metric_id, metric_type,metric_delta, metric_value FROM viking311_metrics")
+	rows, err := sdw.db.Query("SELECT metric_id, metric_type,metric_delta, metric_value FROM metrics")
 	if err != nil {
 		log.Println(err)
 		return
@@ -76,7 +76,7 @@ func (sdw *SnapshotDBWriter) Close() {
 func (sdw *SnapshotDBWriter) dump() {
 	sdw.mx.Lock()
 	defer sdw.mx.Unlock()
-	_, err := sdw.db.Exec("DELETE FROM viking311_metrics")
+	_, err := sdw.db.Exec("DELETE FROM metrics")
 
 	if err != nil {
 		log.Println(err)
@@ -96,7 +96,7 @@ func (sdw *SnapshotDBWriter) dump() {
 			value.Float64 = *v.Value
 			value.Valid = true
 		}
-		_, err := sdw.db.Exec("INSERT INTO viking311_metrics VALUES($1,$2,$3,$4,$5)", v.GetKey(), v.ID, v.MType, delta, value)
+		_, err := sdw.db.Exec("INSERT INTO metrics VALUES($1,$2,$3,$4,$5)", v.GetKey(), v.ID, v.MType, delta, value)
 		if err != nil {
 			log.Println(err)
 		}
@@ -108,7 +108,7 @@ func NewSnapshotDBWriter(db *sql.DB, store Repository, storeInterval time.Durati
 		return nil, fmt.Errorf("db instance is needed")
 	}
 
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS viking311_metrics (metric_key varchar(50) NOT NULL, metric_id varchar(50) NOT NULL, metric_type varchar(50) NOT NULL, metric_delta INT, metric_value DOUBLE PRECISION)")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS metrics (metric_key TEXT NOT NULL, metric_id varchar(50) NOT NULL, metric_type TEXT NOT NULL, metric_delta INT, metric_value DOUBLE PRECISION)")
 	if err != nil {
 		return nil, err
 	}
