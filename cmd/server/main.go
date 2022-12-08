@@ -21,7 +21,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer db.Close()
+		// defer db.Close()
 	}
 
 	s := storage.NewInMemoryStorage()
@@ -35,9 +35,17 @@ func main() {
 		}
 
 		go sw.Receive()
-		defer sw.Close()
+		// defer sw.Close()
 	}
 
+	defer func() {
+		if sw != nil {
+			sw.Close()
+		}
+		if db != nil {
+			db.Close()
+		}
+	}()
 	r := chi.NewRouter()
 
 	r.Use(middleware.RealIP)
