@@ -1,5 +1,6 @@
 package main
 
+//CREATE TABLE IF NOT EXISTS metrics (metric_key varchar(50) NOT NULL, metric_id varchar(50) NOT NULL, metric_type varchar(50) NOT NULL, metric_delta INT, metric_value DOUBLE PRECISION)
 import (
 	"database/sql"
 	"log"
@@ -14,17 +15,33 @@ import (
 )
 
 func main() {
-
-	db, err := sql.Open("postgres", *server.Config.DatabaseDsn)
-	if err != nil {
-		log.Println(err)
-	}
-
-	defer db.Close()
+	var db *sql.DB
 
 	s := storage.NewInMemoryStorage()
 
-	if len(*server.Config.StoreFile) > 0 {
+	if len(*server.Config.DatabaseDsn) > 0 {
+		db_tmp, err := sql.Open("postgres", *server.Config.DatabaseDsn)
+		db = db_tmp
+		if err != nil {
+			log.Println(err)
+		}
+		defer db.Close()
+
+		sw, err := storage.NewSnapshotDbWriter(db, s, *server.Config.StoreInterval)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer sw.Close()
+
+		if *server.Config.Restore {
+			sw.Load()
+		}
+
+		go sw.Receive()
+	}
+
+	if len(*server.Config.StoreFile) > 0 && db == nil {
 		sw, err := storage.NewSnapshotWriter(s, *server.Config.StoreFile, *server.Config.StoreInterval)
 		if err != nil {
 			log.Fatal(err)
