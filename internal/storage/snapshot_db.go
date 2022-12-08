@@ -108,7 +108,7 @@ func NewSnapshotDBWriter(db *sql.DB, store Repository, storeInterval time.Durati
 		return nil, fmt.Errorf("db instance is needed")
 	}
 
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS metrics (metric_key TEXT NOT NULL, metric_id varchar(50) NOT NULL, metric_type TEXT NOT NULL, metric_delta INT, metric_value DOUBLE PRECISION)")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS metrics (metric_key TEXT NOT NULL, metric_id varchar(50) NOT NULL, metric_type TEXT NOT NULL, metric_delta BIGINT, metric_value DOUBLE PRECISION)")
 	if err != nil {
 		return nil, err
 	}
