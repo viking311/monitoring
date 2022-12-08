@@ -35,6 +35,7 @@ func main() {
 		}
 
 		go sw.Receive()
+		defer sw.Close()
 	}
 
 	r := chi.NewRouter()
