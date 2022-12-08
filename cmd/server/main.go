@@ -26,7 +26,7 @@ func main() {
 	}
 
 	s := storage.NewInMemoryStorage()
-	sw, err := storage.NewSpashotWriter(s, *server.Config.StoreFile, *server.Config.StoreInterval)
+	sw, err := storage.NewSpashotWriter(db, s, *server.Config.StoreFile, *server.Config.StoreInterval)
 	if err != nil {
 		log.Fatal(err)
 	}
