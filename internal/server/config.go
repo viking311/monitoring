@@ -60,7 +60,6 @@ func init() {
 	if Config.HashKey == nil {
 		Config.HashKey = hashKey
 	}
-	log.Println(*Config.DatabaseDsn)
 	if Config.DatabaseDsn == nil {
 		Config.DatabaseDsn = dbDsn
 	}
