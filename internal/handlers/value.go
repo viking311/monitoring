@@ -21,13 +21,13 @@ func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	valueName := strings.ToLower(chi.URLParam(r, "name"))
 
-	val := gvh.storage.GetByKey(valueName)
+	val, err := gvh.storage.GetByKey(valueName)
 
-	if val == nil {
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	} else {
-		if val.GetShortTypeName() == typeName {
+		if val.MType == typeName {
 			w.Header().Add("application-type", "text/plain")
 			w.Write([]byte(val.GetStringValue()))
 		} else {

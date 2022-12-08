@@ -13,7 +13,7 @@ import (
 func TestUpdateHandler_ServeHTTP(t *testing.T) {
 	// ch := make(chan entity.MetricEntityInterface, 100)
 	s := storage.NewInMemoryStorage()
-	handlerClass := NewUpdateHandler(s)
+	handlerClass := NewUpdatePlainTextHandler(s)
 	r := chi.NewRouter()
 	r.Post("/update/{type}/{name}/{value}", handlerClass.ServeHTTP)
 	ts := httptest.NewServer(r)
@@ -89,7 +89,7 @@ func TestUpdateHandler_ServeHTTP(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			code, _ := sendTestRequest(t, tt.args.method, tt.args.url)
+			code, _ := sendTestRequest(t, tt.args.method, tt.args.url, "text/plain")
 			assert.Equal(t, tt.want, code)
 		})
 	}

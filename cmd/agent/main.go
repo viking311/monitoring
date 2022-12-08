@@ -1,13 +1,12 @@
 package main
 
 import (
-	"time"
-
+	"github.com/viking311/monitoring/internal/agent"
 	"github.com/viking311/monitoring/internal/entity"
 )
 
 func main() {
-	collector := entity.NewCollector("http://localhost:8080/", 2*time.Second, 10*time.Second)
+	collector := entity.NewCollector("http://"+*agent.Config.Address, *agent.Config.PollInterval, *agent.Config.ReportInterval)
 
 	collector.Do()
 

@@ -8,9 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func sendTestRequest(t *testing.T, method, url string) (int, string) {
+func sendTestRequest(t *testing.T, method, url string, contentType string) (int, string) {
 	req, err := http.NewRequest(method, url, nil)
 	require.NoError(t, err)
+
+	req.Header.Add("Content-Type", contentType)
 
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)

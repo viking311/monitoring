@@ -2,6 +2,7 @@ package entity
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"os"
 	"runtime"
@@ -28,19 +29,25 @@ func (c *Collector) sendReport() {
 	defer c.mtx.RUnlock()
 
 	for _, metric := range c.statCollection.Collection {
-		go c.sendStatRequest(metric.GetUpdateURI(), metric.GetStringValue())
+		go c.sendStatRequest(metric.GetUpdateURI(), metric.GetMetricEntity())
 	}
 	c.statCollection.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 0}
 }
 
-func (c *Collector) sendStatRequest(uri string, value string) {
-	bytesValue := []byte(value)
+func (c *Collector) sendStatRequest(uri string, value Metrics) {
+	bytesValue, err := json.Marshal(value)
+	if err != nil {
+		return
+	}
+
+	// bytesValue := []byte(value)
 	reader := bytes.NewReader(bytesValue)
 	request, err := http.NewRequest(http.MethodPost, c.endpoint+uri, reader)
 	if err != nil {
 		return
 	}
-	request.Header.Set("application-type", "text/plain")
+	// request.Header.Set("Content-Type", "text/plain")
+	request.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, clientErr := client.Do(request)

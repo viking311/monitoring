@@ -1,34 +1,36 @@
 package storage
 
 import (
+	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/viking311/monitoring/internal/entity"
 )
 
-type Repository interface {
-	Update(value entity.MetricEntityInterface)
-	Delete(key string)
-	GetByKey(key string) entity.MetricEntityInterface
-	GetAll() []entity.MetricEntityInterface
-}
-
 type InMemoryStorage struct {
-	data map[string]entity.MetricEntityInterface
-	mx   sync.RWMutex
+	data   map[string]entity.Metrics
+	mx     sync.RWMutex
+	upChan UpdateChannel
 }
 
-func (ims *InMemoryStorage) Update(value entity.MetricEntityInterface) {
+func (ims *InMemoryStorage) Update(value entity.Metrics) {
 	ims.mx.Lock()
 	defer ims.mx.Unlock()
-	item, ok := ims.data[value.GetKey()]
-	// item := ims.GetByKey(value.GetKey())
-	//
-	if ok {
-		item.SetValue(value.GetValue())
-		ims.data[value.GetKey()] = item
-	} else {
+
+	if value.MType == "counter" {
+		_, ok := ims.data[value.GetKey()]
+		if ok && value.Delta != nil {
+			*ims.data[value.GetKey()].Delta += *value.Delta
+		} else if !ok && value.Delta != nil {
+			ims.data[value.GetKey()] = value
+		}
+	} else if value.MType == "gauge" && value.Value != nil {
 		ims.data[value.GetKey()] = value
+	}
+	select {
+	case ims.upChan <- struct{}{}:
+	default:
 	}
 }
 
@@ -38,31 +40,51 @@ func (ims *InMemoryStorage) Delete(key string) {
 	delete(ims.data, key)
 }
 
-func (ims *InMemoryStorage) GetByKey(key string) entity.MetricEntityInterface {
+func (ims *InMemoryStorage) GetByKey(key string) (entity.Metrics, error) {
 	ims.mx.RLock()
 	defer ims.mx.RUnlock()
-	value, ok := ims.data[key]
+
+	value, ok := ims.data[strings.ToLower(key)]
 	if ok {
-		return value
+		return value, nil
 	} else {
-		return nil
+		return entity.Metrics{}, fmt.Errorf("metric not found")
 	}
 }
 
-func (ims *InMemoryStorage) GetAll() []entity.MetricEntityInterface {
+func (ims *InMemoryStorage) GetAll() []entity.Metrics {
 	ims.mx.RLock()
 	defer ims.mx.RUnlock()
-	slice := make([]entity.MetricEntityInterface, len(ims.data))
+
+	slice := make([]entity.Metrics, len(ims.data))
+	i := 0
 	for _, item := range ims.data {
-		slice = append(slice, item)
+		slice[i] = item
+
+		if slice[i].Delta != nil {
+			delta := *slice[i].Delta
+			slice[i].Delta = &delta
+		}
+
+		if slice[i].Value != nil {
+			value := *slice[i].Value
+			slice[i].Value = &value
+		}
+
+		i++
 	}
 
 	return slice
 }
 
+func (ims *InMemoryStorage) GetUpdateChannal() UpdateChannel {
+	return ims.upChan
+}
+
 func NewInMemoryStorage() *InMemoryStorage {
 	return &InMemoryStorage{
-		data: make(map[string]entity.MetricEntityInterface),
-		mx:   sync.RWMutex{},
+		data:   make(map[string]entity.Metrics),
+		mx:     sync.RWMutex{},
+		upChan: make(UpdateChannel),
 	}
 }

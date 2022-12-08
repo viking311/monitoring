@@ -10,14 +10,14 @@ import (
 	"github.com/viking311/monitoring/internal/storage"
 )
 
-type UpdateHandler struct {
+type UpdatePlainTextHandler struct {
 	Server
 }
 
-func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	typeName := strings.ToLower(chi.URLParam(r, "type"))
-	metricName := strings.ToLower(chi.URLParam(r, "name"))
+	metricName := chi.URLParam(r, "name")
 	metricValue := chi.URLParam(r, "value")
 
 	if typeName == "" || metricName == "" || metricValue == "" {
@@ -25,6 +25,14 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if typeName != "gauge" && typeName != "counter" {
+		w.WriteHeader(http.StatusNotImplemented)
+		return
+	}
+	metric := entity.Metrics{
+		ID:    metricName,
+		MType: typeName,
+	}
 	switch typeName {
 	case "gauge":
 		mValue, err := strconv.ParseFloat(metricValue, 64)
@@ -32,11 +40,7 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		entity := entity.GaugeMetricEntity{
-			Name:  metricName,
-			Value: mValue,
-		}
-		uh.storage.Update(&entity)
+		metric.Value = &mValue
 
 	case "counter":
 		mValue, err := strconv.ParseUint(metricValue, 10, 64)
@@ -44,20 +48,13 @@ func (uh UpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		entity := entity.CounterMetricEntity{
-			Name:  metricName,
-			Value: mValue,
-		}
-		uh.storage.Update(&entity)
-	default:
-		w.WriteHeader(http.StatusNotImplemented)
-		return
+		metric.Delta = &mValue
 	}
-
+	uh.storage.Update(metric)
 }
 
-func NewUpdateHandler(s storage.Repository) *UpdateHandler {
-	return &UpdateHandler{
+func NewUpdatePlainTextHandler(s storage.Repository) *UpdatePlainTextHandler {
+	return &UpdatePlainTextHandler{
 		Server: Server{
 			storage: s,
 		},

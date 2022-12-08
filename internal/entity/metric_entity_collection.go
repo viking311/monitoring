@@ -1,84 +1,9 @@
 package entity
 
 import (
-	"fmt"
 	"math/rand"
 	"runtime"
-	"strconv"
 )
-
-type MetricEntityInterface interface {
-	GetUpdateURI() string
-	GetValue() interface{}
-	SetValue(value interface{})
-	GetKey() string
-	GetStringValue() string
-	GetShortTypeName() string
-}
-
-type GaugeMetricEntity struct {
-	Name  string
-	Value float64
-}
-
-func (gme *GaugeMetricEntity) GetUpdateURI() string {
-	return fmt.Sprintf("/update/gauge/%s/%f", gme.Name, gme.Value)
-}
-
-func (gme *GaugeMetricEntity) GetValue() interface{} {
-	return gme.Value
-}
-
-func (gme *GaugeMetricEntity) GetKey() string {
-	return gme.Name
-}
-
-func (gme *GaugeMetricEntity) SetValue(value interface{}) {
-	floatValue, ok := value.(float64)
-	if ok {
-		gme.Value = floatValue
-	}
-}
-
-func (gme *GaugeMetricEntity) GetStringValue() string {
-	return strconv.FormatFloat(gme.Value, 'f', -1, 64)
-}
-
-func (gme *GaugeMetricEntity) GetShortTypeName() string {
-	return "gauge"
-}
-
-type CounterMetricEntity struct {
-	Name  string
-	Value uint64
-}
-
-func (cme *CounterMetricEntity) GetUpdateURI() string {
-	return fmt.Sprintf("/update/counter/%s/%d", cme.Name, cme.Value)
-}
-
-func (cme *CounterMetricEntity) GetValue() interface{} {
-	return cme.Value
-}
-
-func (cme *CounterMetricEntity) SetValue(value interface{}) {
-	intValue, ok := value.(uint64)
-	if ok {
-		cme.Value += intValue
-	}
-}
-
-func (cme *CounterMetricEntity) GetKey() string {
-	return cme.Name
-}
-
-func (cme *CounterMetricEntity) GetStringValue() string {
-	return fmt.Sprintf("%d", cme.Value)
-}
-
-func (cme *CounterMetricEntity) GetShortTypeName() string {
-	return "counter"
-}
 
 type MetricEntityCollection struct {
 	Collection map[string]MetricEntityInterface

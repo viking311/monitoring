@@ -159,7 +159,8 @@ func TestGaugeMetricEntity_GetUpdateURI(t *testing.T) {
 				Name:  "metric1",
 				Value: float64(1),
 			},
-			want: "/update/gauge/metric1/1.000000",
+			// want: "/update/gauge/metric1/1.000000",
+			want: "/update/",
 		},
 		{
 			name: "GetUpdateURI: test2",
@@ -167,7 +168,8 @@ func TestGaugeMetricEntity_GetUpdateURI(t *testing.T) {
 				Name:  "metric2",
 				Value: float64(1.5),
 			},
-			want: "/update/gauge/metric2/1.500000",
+			// want: "/update/gauge/metric2/1.500000",
+			want: "/update/",
 		},
 		{
 			name: "GetUpdateURI: test3",
@@ -175,7 +177,8 @@ func TestGaugeMetricEntity_GetUpdateURI(t *testing.T) {
 				Name:  "metric2",
 				Value: 0,
 			},
-			want: "/update/gauge/metric2/0.000000",
+			// want: "/update/gauge/metric2/0.000000",
+			want: "/update/",
 		},
 	}
 	for _, tt := range tests {
@@ -223,7 +226,7 @@ func TestGaugeMetricEntity_GetKey(t *testing.T) {
 				Name:  "guageMetric",
 				Value: 1,
 			},
-			want: "guageMetric",
+			want: "guagemetric",
 		},
 	}
 	for _, tt := range tests {
@@ -301,7 +304,8 @@ func TestCounterMetricEntity_GetUpdateURI(t *testing.T) {
 				Name:  "m1",
 				Value: uint64(1),
 			},
-			want: "/update/counter/m1/1",
+			// want: "/update/counter/m1/1",
+			want: "/update/",
 		},
 	}
 	for _, tt := range tests {
