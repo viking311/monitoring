@@ -56,17 +56,17 @@ func (sdw *SnapshotDBWriter) Load() {
 }
 
 func (sdw *SnapshotDBWriter) Receive() {
-	if sdw.storeInterval > 0 {
-		ticker := time.NewTicker(sdw.storeInterval)
-		defer ticker.Stop()
-		for range ticker.C {
-			sdw.dump()
-		}
-	} else {
-		for range sdw.store.GetUpdateChannal() {
-			sdw.dump()
-		}
+	// if sdw.storeInterval > 0 {
+	// 	ticker := time.NewTicker(sdw.storeInterval)
+	// 	defer ticker.Stop()
+	// 	for range ticker.C {
+	// 		sdw.dump()
+	// 	}
+	// } else {
+	for range sdw.store.GetUpdateChannal() {
+		sdw.dump()
 	}
+	// }
 }
 
 func (sdw *SnapshotDBWriter) Close() {
