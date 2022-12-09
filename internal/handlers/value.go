@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/viking311/monitoring/internal/entity"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
@@ -21,7 +22,11 @@ func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	valueName := strings.ToLower(chi.URLParam(r, "name"))
 
-	val, err := gvh.storage.GetByKey(valueName)
+	metric := entity.Metrics{
+		ID:    valueName,
+		MType: typeName,
+	}
+	val, err := gvh.storage.GetByKey(metric.GetKey())
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)

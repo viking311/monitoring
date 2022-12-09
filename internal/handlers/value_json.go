@@ -37,7 +37,7 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	val, err := jvh.storage.GetByKey(metr.ID)
+	val, err := jvh.storage.GetByKey(metr.GetKey())
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
