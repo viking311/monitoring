@@ -65,8 +65,8 @@ func (sdw *SnapshotDBWriter) Close() {
 }
 
 func (sdw *SnapshotDBWriter) dump() {
-	sdw.mx.Lock()
-	defer sdw.mx.Unlock()
+	// sdw.mx.Lock()
+	// defer sdw.mx.Unlock()
 
 	for _, v := range sdw.store.GetAll() {
 		delta := sql.NullInt64{}
