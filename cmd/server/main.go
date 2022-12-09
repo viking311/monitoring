@@ -90,7 +90,7 @@ func main() {
 	r.Get("/ping", pingHandler.ServeHTTP)
 
 	jsonBatchUpdateHandler := handlers.NewJSONBatchUpdateHandler(store, *server.Config.HashKey)
-	r.Post("/updates", jsonBatchUpdateHandler.ServeHTTP)
+	r.Post("/updates/", jsonBatchUpdateHandler.ServeHTTP)
 
 	log.Fatal(http.ListenAndServe(*server.Config.Address, r))
 }
