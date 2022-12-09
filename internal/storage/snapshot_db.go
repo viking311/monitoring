@@ -5,20 +5,18 @@ import (
 	"fmt"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/viking311/monitoring/internal/entity"
 )
 
 type SnapshotDBWriter struct {
-	db            *sql.DB
-	store         Repository
-	storeInterval time.Duration
-	mx            sync.Mutex
+	db    *sql.DB
+	store Repository
+	mx    sync.Mutex
 }
 
 func (sdw *SnapshotDBWriter) Load() {
-	rows, err := sdw.db.Query("SELECT metric_id, metric_type,metric_delta, metric_value FROM metrics")
+	rows, err := sdw.db.Query("SELECT id, mtype, delta, value FROM metrics")
 	if err != nil {
 		log.Println(err)
 		return
@@ -56,17 +54,10 @@ func (sdw *SnapshotDBWriter) Load() {
 }
 
 func (sdw *SnapshotDBWriter) Receive() {
-	// if sdw.storeInterval > 0 {
-	// 	ticker := time.NewTicker(sdw.storeInterval)
-	// 	defer ticker.Stop()
-	// 	for range ticker.C {
-	// 		sdw.dump()
-	// 	}
-	// } else {
 	for range sdw.store.GetUpdateChannal() {
 		sdw.dump()
 	}
-	// }
+
 }
 
 func (sdw *SnapshotDBWriter) Close() {
@@ -76,12 +67,6 @@ func (sdw *SnapshotDBWriter) Close() {
 func (sdw *SnapshotDBWriter) dump() {
 	sdw.mx.Lock()
 	defer sdw.mx.Unlock()
-	_, err := sdw.db.Exec("DELETE FROM metrics")
-
-	if err != nil {
-		log.Println(err)
-		return
-	}
 
 	for _, v := range sdw.store.GetAll() {
 		delta := sql.NullInt64{}
@@ -96,27 +81,26 @@ func (sdw *SnapshotDBWriter) dump() {
 			value.Float64 = *v.Value
 			value.Valid = true
 		}
-		_, err := sdw.db.Exec("INSERT INTO metrics VALUES($1,$2,$3,$4,$5)", v.GetKey(), v.ID, v.MType, delta, value)
+		_, err := sdw.db.Exec("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey) DO UPDATE SET delta=$6, value=$7", v.GetKey(), v.ID, v.MType, delta, value, delta, value)
 		if err != nil {
 			log.Println(err)
 		}
 	}
 
 }
-func NewSnapshotDBWriter(db *sql.DB, store Repository, storeInterval time.Duration) (*SnapshotDBWriter, error) {
+func NewSnapshotDBWriter(db *sql.DB, store Repository) (*SnapshotDBWriter, error) {
 	if db == nil {
 		return nil, fmt.Errorf("db instance is needed")
 	}
 
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS metrics (metric_key TEXT NOT NULL, metric_id varchar(50) NOT NULL, metric_type TEXT NOT NULL, metric_delta BIGINT, metric_value DOUBLE PRECISION)")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS metrics (mkey TEXT NOT NULL, id TEXT NOT NULL, mtype TEXT NOT NULL, delta BIGINT, value DOUBLE PRECISION, CONSTRAINT mkey_pk PRIMARY KEY (mkey))")
 	if err != nil {
 		return nil, err
 	}
 
 	return &SnapshotDBWriter{
-		db:            db,
-		store:         store,
-		storeInterval: storeInterval,
-		mx:            sync.Mutex{},
+		db:    db,
+		store: store,
+		mx:    sync.Mutex{},
 	}, nil
 }

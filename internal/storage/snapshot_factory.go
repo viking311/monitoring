@@ -7,7 +7,7 @@ import (
 
 func NewSpashotWriter(db *sql.DB, s Repository, fileName string, storeInterval time.Duration) (SnapshotWriterInterface, error) {
 	if db != nil {
-		sdw, err := NewSnapshotDBWriter(db, s, storeInterval)
+		sdw, err := NewSnapshotDBWriter(db, s)
 		if err != nil {
 			return nil, err
 		}

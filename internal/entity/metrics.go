@@ -14,7 +14,7 @@ type Metrics struct {
 }
 
 func (m Metrics) GetKey() string {
-	return strings.ToLower(m.ID)
+	return strings.ToLower(m.ID) + "::" + strings.ToLower(m.MType)
 }
 
 func (m Metrics) GetStringValue() string {
