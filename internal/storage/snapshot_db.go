@@ -81,7 +81,7 @@ func (sdw *SnapshotDBWriter) dump() {
 			value.Float64 = *v.Value
 			value.Valid = true
 		}
-		_, err := sdw.db.Exec("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey) DO UPDATE SET delta=$6, value=$7", v.GetKey(), v.ID, v.MType, delta, value, delta, value)
+		_, err := sdw.db.Exec("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey,mtype) DO UPDATE SET delta=$6, value=$7", v.GetKey(), v.ID, v.MType, delta, value, delta, value)
 		if err != nil {
 			log.Println(err)
 		}
@@ -93,7 +93,7 @@ func NewSnapshotDBWriter(db *sql.DB, store Repository) (*SnapshotDBWriter, error
 		return nil, fmt.Errorf("db instance is needed")
 	}
 
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS metrics (mkey TEXT NOT NULL, id TEXT NOT NULL, mtype TEXT NOT NULL, delta BIGINT, value DOUBLE PRECISION, CONSTRAINT mkey_pk PRIMARY KEY (mkey))")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS metrics (mkey TEXT NOT NULL, id TEXT NOT NULL, mtype TEXT NOT NULL, delta BIGINT, value DOUBLE PRECISION, CONSTRAINT key_type_uniq UNIQUE (mkey, mtype))")
 	if err != nil {
 		return nil, err
 	}
