@@ -149,6 +149,51 @@ func (dbs *DBStorage) GetUpdateChannal() UpdateChannel {
 	return dbs.upChan
 }
 
+func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
+	dbs.mx.Lock()
+	defer dbs.mx.Unlock()
+
+	tx, err := dbs.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey) DO UPDATE SET delta=metrics.delta + $6, value=$7")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for _, value := range values {
+		delta := sql.NullInt64{}
+		if value.Delta != nil {
+			delta.Int64 = int64(*value.Delta)
+			delta.Valid = true
+
+		}
+
+		floatValue := sql.NullFloat64{}
+		if value.Value != nil {
+			floatValue.Float64 = *value.Value
+			floatValue.Valid = true
+		}
+
+		if _, err := stmt.Exec(value.GetKey(), value.ID, value.MType, delta, floatValue, delta, floatValue); err != nil {
+			return err
+		}
+	}
+
+	tx.Commit()
+
+	select {
+	case dbs.upChan <- struct{}{}:
+	default:
+	}
+
+	return nil
+}
+
 func NewDBStorage(db *sql.DB) (*DBStorage, error) {
 	if db == nil {
 		return nil, fmt.Errorf("db instance is needed")

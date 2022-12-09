@@ -89,6 +89,9 @@ func main() {
 	pingHandler := handlers.NewPingHandler(db)
 	r.Get("/ping", pingHandler.ServeHTTP)
 
+	jsonBatchUpdateHandler := handlers.NewJSONBatchUpdateHandler(store, *server.Config.HashKey)
+	r.Post("/updates", jsonBatchUpdateHandler.ServeHTTP)
+
 	log.Fatal(http.ListenAndServe(*server.Config.Address, r))
 }
 

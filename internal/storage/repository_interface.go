@@ -10,4 +10,5 @@ type Repository interface {
 	GetByKey(key string) (entity.Metrics, error)
 	GetAll() []entity.Metrics
 	GetUpdateChannal() UpdateChannel
+	BatchUpdate([]entity.Metrics) error
 }
