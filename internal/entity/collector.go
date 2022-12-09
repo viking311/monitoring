@@ -29,21 +29,26 @@ func (c *Collector) sendReport() {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 
+	values := make([]Metrics, 0)
+
 	for _, metric := range c.statCollection.Collection {
-		go c.sendStatRequest(metric.GetUpdateURI(), metric.GetMetricEntity())
+		mc := metric.GetMetricEntity()
+		mc.Hash = MetricsHash(mc, c.hashKey)
+		values = append(values, mc)
+		// go c.sendStatRequest(metric.GetUpdateURI(), metric.GetMetricEntity())
 	}
+	c.sendBatchRequest(values)
 	c.statCollection.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 0}
 }
 
-func (c *Collector) sendStatRequest(uri string, value Metrics) {
-	value.Hash = MetricsHash(value, c.hashKey)
-	bytesValue, err := json.Marshal(value)
+func (c *Collector) sendBatchRequest(values []Metrics) {
+	bytesValue, err := json.Marshal(values)
 	if err != nil {
 		return
 	}
 
 	reader := bytes.NewReader(bytesValue)
-	request, err := http.NewRequest(http.MethodPost, c.endpoint+uri, reader)
+	request, err := http.NewRequest(http.MethodPost, c.endpoint+"/updates/", reader)
 	if err != nil {
 		return
 	}
