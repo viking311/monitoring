@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"log"
 	"math/rand"
 	"runtime"
 )
@@ -44,7 +45,7 @@ func (mec *MetricEntityCollection) UpdateMetric(stat runtime.MemStats) {
 	} else {
 		mec.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 1}
 	}
-
+	log.Println("update metrics")
 }
 
 func NewMertricCollection() MetricEntityCollection {

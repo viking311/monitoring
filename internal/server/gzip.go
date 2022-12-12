@@ -3,6 +3,7 @@ package server
 import (
 	"compress/gzip"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -25,6 +26,7 @@ func Gzip(nextHandler http.Handler) http.Handler {
 
 		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
+			log.Println(err)
 			io.WriteString(w, err.Error())
 			return
 		}
@@ -43,6 +45,7 @@ func UnGzip(nextHandler http.Handler) http.Handler {
 		if r.Header.Get(`Content-Encoding`) == `gzip` {
 			gz, err := gzip.NewReader(r.Body)
 			if err != nil {
+				log.Println(err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"runtime"
@@ -46,12 +47,14 @@ func (c *Collector) sendReport() {
 func (c *Collector) sendBatchRequest(values []Metrics) {
 	bytesValue, err := json.Marshal(values)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 
 	var b bytes.Buffer
 	writer, err := gzip.NewWriterLevel(&b, gzip.BestSpeed)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 	writer.Write(bytesValue)
@@ -60,6 +63,7 @@ func (c *Collector) sendBatchRequest(values []Metrics) {
 	reader := bytes.NewReader(b.Bytes())
 	request, err := http.NewRequest(http.MethodPost, c.endpoint+"/updates/", reader)
 	if err != nil {
+		log.Println(err)
 		return
 	}
 	request.Header.Set("Content-Type", "application/json")
@@ -68,8 +72,10 @@ func (c *Collector) sendBatchRequest(values []Metrics) {
 	client := &http.Client{}
 	resp, clientErr := client.Do(request)
 	if clientErr != nil {
+		log.Println(clientErr)
 		return
 	}
+	log.Println(resp)
 
 	defer resp.Body.Close()
 }
@@ -83,6 +89,7 @@ func (c *Collector) updateStat() {
 }
 
 func (c *Collector) Do() {
+	log.Println("start metrics watching")
 	updateTicker := time.NewTicker(c.pollInterval)
 	reportTicker := time.NewTicker(c.reportInterval)
 
@@ -98,6 +105,7 @@ func (c *Collector) Do() {
 		case <-reportTicker.C:
 			c.sendReport()
 		case <-c.signals.C:
+			log.Println("agent itnerapted")
 			os.Exit(0)
 		}
 

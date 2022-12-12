@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -16,6 +17,7 @@ type GetValueHandler struct {
 func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	typeName := strings.ToLower(chi.URLParam(r, "type"))
 	if typeName != "gauge" && typeName != "counter" {
+		log.Println("unknown metric type")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

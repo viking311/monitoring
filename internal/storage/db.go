@@ -44,6 +44,7 @@ func (dbs *DBStorage) Update(value entity.Metrics) {
 func (dbs *DBStorage) Delete(key string) {
 	dbs.mx.Lock()
 	defer dbs.mx.Unlock()
+
 	_, err := dbs.db.Exec("DELETE FROM metrics WHERE mkey=$1", key)
 	if err != nil {
 		log.Println(err)
@@ -155,12 +156,14 @@ func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 
 	tx, err := dbs.db.Begin()
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	defer tx.Rollback()
 
 	stmt, err := tx.Prepare("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey) DO UPDATE SET delta=metrics.delta + $6, value=$7")
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	defer stmt.Close()

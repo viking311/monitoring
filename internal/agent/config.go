@@ -25,12 +25,16 @@ type AgentConfig struct {
 var Config AgentConfig
 
 func init() {
+	log.Println("start reading configuration")
+
+	log.Println("reading flags")
 	addressFlag := flag.String("a", DefaultAddress, "address to send metrics")
 	reportInterval := flag.Duration("r", DefaultReportInterval, "how often send report to server")
 	pollInterval := flag.Duration("p", DefaultPollInterval, "how often update metrics")
 	hashKey := flag.String("k", DefaultHashKey, "hash key")
 	flag.Parse()
 
+	log.Println("reading enviroments")
 	if err := env.Parse(&Config); err != nil {
 		log.Fatal(err)
 	}
@@ -50,4 +54,6 @@ func init() {
 	if Config.HashKey == nil {
 		Config.HashKey = hashKey
 	}
+
+	log.Println("finish reading configuration")
 }

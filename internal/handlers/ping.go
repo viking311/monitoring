@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -15,7 +14,7 @@ type PingHandler struct {
 
 func (ph *PingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if ph.db == nil {
-		fmt.Println("Db nuil")
+		log.Println("db is nil")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -49,6 +49,7 @@ func (jbuh *JSONBatchUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 
 	err = jbuh.storage.BatchUpdate(cleanMetrics[:i])
 	if err != nil {
+		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

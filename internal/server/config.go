@@ -29,6 +29,9 @@ type ServerConfig struct {
 var Config ServerConfig
 
 func init() {
+	log.Println("start reading configuration")
+	log.Println("reading flags")
+
 	addressFlag := flag.String("a", DefaultAddress, "address to listen")
 	restoreFlag := flag.Bool("r", DefaultRestore, "restore data from file")
 	storeInterval := flag.Duration("i", DefaultStoreInterval, "how often store data to file")
@@ -37,6 +40,7 @@ func init() {
 	dbDsn := flag.String("d", DefaultDatabaseDsn, "connection to db")
 	flag.Parse()
 
+	log.Println("reading enviroments")
 	if err := env.Parse(&Config); err != nil {
 		log.Fatal(err)
 	}
@@ -64,4 +68,6 @@ func init() {
 	if Config.DatabaseDsn == nil {
 		Config.DatabaseDsn = dbDsn
 	}
+
+	log.Println("finish reading configuration")
 }

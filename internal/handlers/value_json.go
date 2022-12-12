@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/viking311/monitoring/internal/entity"
@@ -17,12 +18,14 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 
 	if contentType != "application/json" {
+		log.Print("incorect content type")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -33,6 +36,7 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &metr)
 
 	if err != nil {
+		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -46,6 +50,7 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			val.Hash = entity.MetricsHash(val, jvh.hashKey)
 			respBody, err := json.Marshal(val)
 			if err != nil {
+				log.Println(err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}

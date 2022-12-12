@@ -21,6 +21,10 @@ var (
 
 func main() {
 
+	log.Println("server start")
+
+	defer log.Println("server stop")
+
 	if len(*server.Config.DatabaseDsn) > 0 {
 		err := initDB(*server.Config.DatabaseDsn)
 		if err != nil {
