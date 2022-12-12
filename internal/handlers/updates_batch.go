@@ -18,12 +18,14 @@ func (jbuh *JSONBatchUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	contentType := r.Header.Get("Content-Type")
 
 	if contentType != "application/json" {
+		log.Println("incorrect content type")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
