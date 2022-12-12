@@ -2,6 +2,7 @@ package entity
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -28,14 +29,15 @@ type Collector struct {
 func (c *Collector) sendReport() {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
-
+	if len(c.statCollection.Collection) == 0 {
+		return
+	}
 	values := make([]Metrics, 0)
 
 	for _, metric := range c.statCollection.Collection {
 		mc := metric.GetMetricEntity()
 		mc.Hash = MetricsHash(mc, c.hashKey)
 		values = append(values, mc)
-		// go c.sendStatRequest(metric.GetUpdateURI(), metric.GetMetricEntity())
 	}
 	c.sendBatchRequest(values)
 	c.statCollection.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 0}
@@ -47,18 +49,28 @@ func (c *Collector) sendBatchRequest(values []Metrics) {
 		return
 	}
 
-	reader := bytes.NewReader(bytesValue)
+	var b bytes.Buffer
+	writer, err := gzip.NewWriterLevel(&b, gzip.BestSpeed)
+	if err != nil {
+		return
+	}
+	writer.Write(bytesValue)
+	writer.Close()
+
+	reader := bytes.NewReader(b.Bytes())
 	request, err := http.NewRequest(http.MethodPost, c.endpoint+"/updates/", reader)
 	if err != nil {
 		return
 	}
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Encoding", "gzip")
 
 	client := &http.Client{}
 	resp, clientErr := client.Do(request)
 	if clientErr != nil {
 		return
 	}
+
 	defer resp.Body.Close()
 }
 
