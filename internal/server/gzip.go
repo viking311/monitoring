@@ -27,7 +27,10 @@ func Gzip(nextHandler http.Handler) http.Handler {
 		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
 			log.Println(err)
-			io.WriteString(w, err.Error())
+			_, ioErr := io.WriteString(w, err.Error())
+			if ioErr != nil {
+				log.Println(ioErr)
+			}
 			return
 		}
 		defer gz.Close()

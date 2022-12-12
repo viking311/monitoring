@@ -52,13 +52,16 @@ func (c *Collector) sendBatchRequest(values []Metrics) {
 	}
 
 	var b bytes.Buffer
-	writer, err := gzip.NewWriterLevel(&b, gzip.BestSpeed)
+	gzWriter, err := gzip.NewWriterLevel(&b, gzip.BestSpeed)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	writer.Write(bytesValue)
-	writer.Close()
+	_, err = gzWriter.Write(bytesValue)
+	if err != nil {
+		log.Println(err)
+	}
+	gzWriter.Close()
 
 	reader := bytes.NewReader(b.Bytes())
 	request, err := http.NewRequest(http.MethodPost, c.endpoint+"/updates/", reader)

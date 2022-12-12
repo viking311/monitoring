@@ -73,7 +73,10 @@ func (juh *JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")
-	w.Write(respBody)
+	_, err = w.Write(respBody)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func NewJSONUpdateHandler(s storage.Repository, hashKey string) *JSONUpdateHandler {

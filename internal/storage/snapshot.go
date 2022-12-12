@@ -65,11 +65,23 @@ func (sw *SnapshotWriter) dump() {
 			continue
 		}
 
-		sw.writer.WriteString(string(data) + "\n")
+		_, err = sw.writer.WriteString(string(data) + "\n")
+		if err != nil {
+			log.Println(err)
+		}
 	}
-	sw.file.Truncate(0)
-	sw.file.Seek(0, 0)
-	sw.writer.Flush()
+	err := sw.file.Truncate(0)
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = sw.file.Seek(0, 0)
+	if err != nil {
+		log.Println(err)
+	}
+	err = sw.writer.Flush()
+	if err != nil {
+		log.Println(err)
+	}
 	log.Println("data stored to file " + sw.file.Name())
 }
 

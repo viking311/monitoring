@@ -36,7 +36,10 @@ func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if val.MType == typeName {
 			w.Header().Add("application-type", "text/plain")
-			w.Write([]byte(val.GetStringValue()))
+			_, err := w.Write([]byte(val.GetStringValue()))
+			if err != nil {
+				log.Println(err)
+			}
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}

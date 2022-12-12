@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/viking311/monitoring/internal/storage"
@@ -18,7 +19,10 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	body += "</table></body></html>"
 	w.Header().Add("Content-Type", "text/html")
-	w.Write([]byte(body))
+	_, err := w.Write([]byte(body))
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func NewGetListHandler(s storage.Repository) *GetListHandler {

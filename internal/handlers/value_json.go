@@ -43,6 +43,7 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	val, err := jvh.storage.GetByKey(metr.GetKey())
 	if err != nil {
+		log.Println(err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	} else {
@@ -55,7 +56,10 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			w.Header().Add("Content-Type", "application/json")
-			w.Write(respBody)
+			_, err = w.Write(respBody)
+			if err != nil {
+				log.Println(err)
+			}
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
