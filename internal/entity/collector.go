@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -115,7 +114,7 @@ func (c *Collector) Do() {
 			}
 		case <-c.signals.C:
 			log.Println("agent interrupted")
-			os.Exit(0)
+			return
 		}
 
 	}
