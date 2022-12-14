@@ -33,7 +33,7 @@ func (c *Collector) sendReport() {
 	if len(c.statCollection.Collection) == 0 {
 		return
 	}
-	values := make([]Metrics, 0)
+	values := make([]Metrics, 0, len(c.statCollection.Collection))
 
 	for _, metric := range c.statCollection.Collection {
 		mc := metric.GetMetricEntity()
