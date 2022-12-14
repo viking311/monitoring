@@ -52,29 +52,26 @@ func (ims *InMemoryStorage) GetByKey(key string) (entity.Metrics, error) {
 	}
 }
 
-func (ims *InMemoryStorage) GetAll() []entity.Metrics {
+func (ims *InMemoryStorage) GetAll() ([]entity.Metrics, error) {
 	ims.mx.RLock()
 	defer ims.mx.RUnlock()
 
-	slice := make([]entity.Metrics, len(ims.data))
-	i := 0
+	slice := make([]entity.Metrics, 0, len(ims.data))
 	for _, item := range ims.data {
-		slice[i] = item
-
-		if slice[i].Delta != nil {
-			delta := *slice[i].Delta
-			slice[i].Delta = &delta
+		if item.Delta != nil {
+			delta := *item.Delta
+			item.Delta = &delta
 		}
 
-		if slice[i].Value != nil {
-			value := *slice[i].Value
-			slice[i].Value = &value
+		if item.Value != nil {
+			value := *item.Value
+			item.Value = &value
 		}
+		slice = append(slice, item)
 
-		i++
 	}
 
-	return slice
+	return slice, nil
 }
 
 func (ims *InMemoryStorage) GetUpdateChannal() UpdateChannel {

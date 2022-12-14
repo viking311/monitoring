@@ -45,44 +45,54 @@ func (sw *SnapshotWriter) Receive() {
 		ticker := time.NewTicker(sw.storeInterval)
 		defer ticker.Stop()
 		for range ticker.C {
-			sw.dump()
+			err := sw.dump()
+			if err != nil {
+				log.Panic(err)
+			}
 		}
 	} else {
 		for range sw.store.GetUpdateChannal() {
-			sw.dump()
+			err := sw.dump()
+			if err != nil {
+				log.Panic(err)
+			}
 		}
 	}
 }
 
-func (sw *SnapshotWriter) dump() {
+func (sw *SnapshotWriter) dump() error {
 	sw.mx.Lock()
 	defer sw.mx.Unlock()
-
-	for _, v := range sw.store.GetAll() {
+	values, err := sw.store.GetAll()
+	if err != nil {
+		return err
+	}
+	for _, v := range values {
 		data, err := json.Marshal(v)
 		if err != nil {
-			log.Println(err)
-			continue
+			return err
 		}
 
 		_, err = sw.writer.WriteString(string(data) + "\n")
 		if err != nil {
-			log.Println(err)
+			return err
 		}
 	}
-	err := sw.file.Truncate(0)
+	err = sw.file.Truncate(0)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	_, err = sw.file.Seek(0, 0)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	err = sw.writer.Flush()
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	log.Println("data stored to file " + sw.file.Name())
+
+	return nil
 }
 
 func NewSnapshotWriter(storage Repository, fileName string, storeInterval time.Duration) (*SnapshotWriter, error) {
