@@ -45,7 +45,7 @@ func (mec *MetricEntityCollection) UpdateMetric(stat runtime.MemStats) {
 	} else {
 		mec.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 1}
 	}
-	log.Println("update metrics")
+	log.Println("metrics updated")
 }
 
 func NewMertricCollection() MetricEntityCollection {
