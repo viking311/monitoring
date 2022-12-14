@@ -108,7 +108,7 @@ func (c *Collector) Do() {
 		case <-reportTicker.C:
 			c.sendReport()
 		case <-c.signals.C:
-			log.Println("agent itnerapted")
+			log.Println("agent interrupted")
 			os.Exit(0)
 		}
 
