@@ -25,11 +25,11 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body += "</table></body></html>"
 
 	_, err = w.Write([]byte(body))
+	w.Header().Add("Content-Type", "text/html")
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	w.Header().Add("Content-Type", "text/html")
 }
 
 func NewGetListHandler(s storage.Repository) *GetListHandler {
