@@ -33,7 +33,8 @@ func main() {
 	}
 
 	if db == nil {
-		store = storage.NewInMemoryStorage()
+		sendUpdateNotify := (*server.Config.StoreInterval == 0)
+		store = storage.NewInMemoryStorage(sendUpdateNotify)
 	} else {
 		var err error
 		store, err = storage.NewDBStorage(db)
