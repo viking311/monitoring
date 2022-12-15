@@ -29,7 +29,10 @@ func (sw *SnapshotWriter) Load() error {
 		if err != nil {
 			return err
 		}
-		sw.store.Update(metric)
+		err = sw.store.Update(metric)
+		if err != nil {
+			return err
+		}
 	}
 	logger.Logger.Info("data loaded from file " + sw.file.Name())
 	return nil

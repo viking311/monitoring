@@ -61,7 +61,8 @@ func TestInMemoryStorage_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.ims.Update(tt.args.value)
+			err := tt.ims.Update(tt.args.value)
+			assert.Nil(t, err)
 			assert.Equal(t, 1, len(tt.ims.data))
 			value, ok := tt.ims.data[tt.args.value.GetKey()]
 			assert.Equal(t, true, ok)
