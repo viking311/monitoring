@@ -137,7 +137,6 @@ func (dbs *DBStorage) GetUpdateChannal() UpdateChannel {
 func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 	tx, err := dbs.db.Begin()
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 	defer func() {
@@ -149,7 +148,6 @@ func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 
 	stmt, err := tx.Prepare("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey) DO UPDATE SET delta=metrics.delta + $6, value=$7")
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 	defer stmt.Close()
@@ -175,12 +173,13 @@ func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 
 	err = tx.Commit()
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
-	select {
-	case dbs.upChan <- struct{}{}:
-	default:
+	if dbs.isSendNotify {
+		go func() {
+			dbs.upChan <- struct{}{}
+		}()
 	}
 
 	return nil
