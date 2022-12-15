@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -109,7 +108,7 @@ func (c *Collector) Do() {
 			c.sendReport()
 		case <-c.signals.C:
 			log.Println("agent interrupted")
-			os.Exit(0)
+			return
 		}
 
 	}
