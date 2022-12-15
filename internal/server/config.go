@@ -2,10 +2,10 @@ package server
 
 import (
 	"flag"
-	"log"
 	"time"
 
 	"github.com/caarlos0/env/v6"
+	"github.com/viking311/monitoring/internal/logger"
 )
 
 const (
@@ -29,8 +29,8 @@ type ServerConfig struct {
 var Config ServerConfig
 
 func init() {
-	log.Println("start reading configuration")
-	log.Println("reading flags")
+	logger.Logger.Info("start reading configuration")
+	logger.Logger.Debug("reading flags")
 
 	addressFlag := flag.String("a", DefaultAddress, "address to listen")
 	restoreFlag := flag.Bool("r", DefaultRestore, "restore data from file")
@@ -40,9 +40,9 @@ func init() {
 	dbDsn := flag.String("d", DefaultDatabaseDsn, "connection to db")
 	flag.Parse()
 
-	log.Println("reading enviroments")
+	logger.Logger.Debug("reading enviroments")
 	if err := env.Parse(&Config); err != nil {
-		log.Fatal(err)
+		logger.Logger.Fatal(err)
 	}
 
 	if Config.Address == nil {
@@ -69,5 +69,5 @@ func init() {
 		Config.DatabaseDsn = dbDsn
 	}
 
-	log.Println("finish reading configuration")
+	logger.Logger.Info("finish reading configuration")
 }

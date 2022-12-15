@@ -3,10 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/viking311/monitoring/internal/entity"
+	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
@@ -18,14 +18,14 @@ func (juh *JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	contentType := r.Header.Get("Content-Type")
 
 	if contentType != "application/json" {
-		log.Print("incorect content type")
+		logger.Logger.Warn("incorect content type")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -36,13 +36,13 @@ func (juh *JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	err = json.Unmarshal(body, &metr)
 
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if !juh.verifyMetricsSing(metr) {
-		log.Println("incorect sign")
+		logger.Logger.Error("incorect sign")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -50,21 +50,21 @@ func (juh *JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	metr.Hash = ""
 
 	if metr.MType != "gauge" && metr.MType != "counter" {
-		log.Println("unknown metric type")
+		logger.Logger.Warn("unknown metric type")
 		w.WriteHeader(http.StatusNotImplemented)
 		return
 	}
 
 	err = juh.storage.Update(metr)
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	currentValue, err := juh.storage.GetByKey(metr.GetKey())
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -73,14 +73,14 @@ func (juh *JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	respBody, err := json.Marshal(currentValue)
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")
 	_, err = w.Write(respBody)
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 	}
 }
 

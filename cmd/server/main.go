@@ -2,13 +2,14 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
 
+	middlewareLogger "github.com/chi-middleware/logrus-logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/lib/pq"
 	"github.com/viking311/monitoring/internal/handlers"
+	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/server"
 	"github.com/viking311/monitoring/internal/storage"
 )
@@ -21,14 +22,14 @@ var (
 
 func main() {
 
-	log.Println("server start")
+	logger.Logger.Info("server start")
 
-	defer log.Println("server stop")
+	defer logger.Logger.Info("server stop")
 
 	if len(*server.Config.DatabaseDsn) > 0 {
 		err := initDB(*server.Config.DatabaseDsn)
 		if err != nil {
-			log.Fatal(err)
+			logger.Logger.Fatal(err)
 		}
 	}
 	isSendNotify := *server.Config.StoreInterval == 0
@@ -38,7 +39,7 @@ func main() {
 		var err error
 		store, err = storage.NewDBStorage(db, isSendNotify)
 		if err != nil {
-			log.Fatal(err)
+			logger.Logger.Fatal(err)
 		}
 	}
 
@@ -47,13 +48,13 @@ func main() {
 
 		sw, err = storage.NewSnapshotWriter(store, *server.Config.StoreFile, *server.Config.StoreInterval)
 		if err != nil {
-			log.Fatal(err)
+			logger.Logger.Fatal(err)
 		}
 
 		if *server.Config.Restore {
 			err = sw.Load()
 			if err != nil {
-				log.Println(err)
+				logger.Logger.Error(err)
 			}
 		}
 
@@ -73,7 +74,8 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
+	// r.Use(middleware.Logger)
+	r.Use(middlewareLogger.Logger("router", logger.Logger))
 	r.Use(middleware.Recoverer)
 	r.Use(server.Gzip)
 	r.Use(server.UnGzip)
@@ -98,8 +100,7 @@ func main() {
 
 	jsonBatchUpdateHandler := handlers.NewJSONBatchUpdateHandler(store, *server.Config.HashKey)
 	r.Post("/updates/", jsonBatchUpdateHandler.ServeHTTP)
-
-	log.Fatal(http.ListenAndServe(*server.Config.Address, r))
+	logger.Logger.Fatal(http.ListenAndServe(*server.Config.Address, r))
 }
 
 func initDB(dsn string) error {

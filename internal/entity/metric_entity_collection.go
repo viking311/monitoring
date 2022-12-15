@@ -1,9 +1,10 @@
 package entity
 
 import (
-	"log"
 	"math/rand"
 	"runtime"
+
+	"github.com/viking311/monitoring/internal/logger"
 )
 
 type MetricEntityCollection struct {
@@ -45,7 +46,7 @@ func (mec *MetricEntityCollection) UpdateMetric(stat runtime.MemStats) {
 	} else {
 		mec.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 1}
 	}
-	log.Println("metrics updated")
+	logger.Logger.Debug("metrics updated")
 }
 
 func NewMertricCollection() MetricEntityCollection {

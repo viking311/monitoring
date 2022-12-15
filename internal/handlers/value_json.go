@@ -3,10 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/viking311/monitoring/internal/entity"
+	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
@@ -18,14 +18,14 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 
 	if contentType != "application/json" {
-		log.Print("incorect content type")
+		logger.Logger.Error("incorect content type")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -36,14 +36,14 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &metr)
 
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	val, err := jvh.storage.GetByKey(metr.GetKey())
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	} else {
@@ -51,14 +51,14 @@ func (jvh JSONValueHAndler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			val.Hash = entity.MetricsHash(val, jvh.hashKey)
 			respBody, err := json.Marshal(val)
 			if err != nil {
-				log.Println(err)
+				logger.Logger.Error(err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 			w.Header().Add("Content-Type", "application/json")
 			_, err = w.Write(respBody)
 			if err != nil {
-				log.Println(err)
+				logger.Logger.Error(err)
 			}
 		} else {
 			w.WriteHeader(http.StatusNotFound)

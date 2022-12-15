@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/viking311/monitoring/internal/entity"
+	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
@@ -17,7 +17,7 @@ type GetValueHandler struct {
 func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	typeName := strings.ToLower(chi.URLParam(r, "type"))
 	if typeName != "gauge" && typeName != "counter" {
-		log.Println("unknown metric type")
+		logger.Logger.Error("unknown metric type")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -38,7 +38,7 @@ func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("application-type", "text/plain")
 			_, err := w.Write([]byte(val.GetStringValue()))
 			if err != nil {
-				log.Println(err)
+				logger.Logger.Error(err)
 			}
 		} else {
 			w.WriteHeader(http.StatusNotFound)

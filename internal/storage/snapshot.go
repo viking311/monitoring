@@ -3,12 +3,12 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
-	"log"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/viking311/monitoring/internal/entity"
+	"github.com/viking311/monitoring/internal/logger"
 )
 
 type SnapshotWriter struct {
@@ -31,18 +31,18 @@ func (sw *SnapshotWriter) Load() error {
 		}
 		sw.store.Update(metric)
 	}
-	log.Println("data loaded from file " + sw.file.Name())
+	logger.Logger.Info("data loaded from file " + sw.file.Name())
 	return nil
 }
 
 func (sw *SnapshotWriter) Close() {
 	err := sw.dump()
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 	}
 	err = sw.file.Close()
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 	}
 }
 
@@ -53,14 +53,14 @@ func (sw *SnapshotWriter) Receive() {
 		for range ticker.C {
 			err := sw.dump()
 			if err != nil {
-				log.Println(err)
+				logger.Logger.Error(err)
 			}
 		}
 	} else {
 		for range sw.store.GetUpdateChannal() {
 			err := sw.dump()
 			if err != nil {
-				log.Println(err)
+				logger.Logger.Error(err)
 			}
 		}
 	}
@@ -97,7 +97,7 @@ func (sw *SnapshotWriter) dump() error {
 	if err != nil {
 		return err
 	}
-	log.Println("data stored to file " + sw.file.Name())
+	logger.Logger.Debug("data stored to file " + sw.file.Name())
 
 	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"log"
 	"net/http"
 	"runtime"
 	"strings"
@@ -12,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/sirupsen/logrus"
+	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/signals"
 )
 
@@ -41,7 +42,7 @@ func (c *Collector) sendReport() {
 	}
 	err := c.sendBatchRequest(values)
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 	}
 	c.statCollection.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 0}
 }
@@ -76,7 +77,10 @@ func (c *Collector) sendBatchRequest(values []Metrics) error {
 	if clientErr != nil {
 		return clientErr
 	}
-	log.Println(resp)
+	logger.Logger.WithFields(logrus.Fields{
+		"request": request,
+		"resonse": resp,
+	}).Info("Metrics were sended")
 
 	resp.Body.Close()
 	return nil
@@ -91,7 +95,7 @@ func (c *Collector) updateStat() {
 }
 
 func (c *Collector) Do() {
-	log.Println("start metrics watching")
+	logger.Logger.Info("start metrics watching")
 	updateTicker := time.NewTicker(c.pollInterval)
 	reportTicker := time.NewTicker(c.reportInterval)
 
@@ -107,7 +111,7 @@ func (c *Collector) Do() {
 		case <-reportTicker.C:
 			c.sendReport()
 		case <-c.signals.C:
-			log.Println("agent interrupted")
+			logger.Logger.Info("agent interrupted")
 			return
 		}
 

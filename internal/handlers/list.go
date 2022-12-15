@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
+	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
@@ -15,7 +15,7 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body := "<html><body><table border=1><tr><th>Metric</th><th>Value</th></tr>"
 	values, err := glh.storage.GetAll()
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 	}
 	for _, v := range values {
 		body += "<tr><td>" + v.ID + "</td><td>" + v.GetStringValue() + "</td></tr>"
@@ -24,7 +24,7 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/html")
 	_, err = w.Write([]byte(body))
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Error(err)
 	}
 }
 
