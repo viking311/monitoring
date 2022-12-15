@@ -39,34 +39,34 @@ func (c *Collector) sendReport() {
 		mc.Hash = MetricsHash(mc, c.hashKey)
 		values = append(values, mc)
 	}
-	c.sendBatchRequest(values)
+	err := c.sendBatchRequest(values)
+	if err != nil {
+		log.Println(err)
+	}
 	c.statCollection.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 0}
 }
 
-func (c *Collector) sendBatchRequest(values []Metrics) {
+func (c *Collector) sendBatchRequest(values []Metrics) error {
 	bytesValue, err := json.Marshal(values)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 
 	var b bytes.Buffer
 	gzWriter, err := gzip.NewWriterLevel(&b, gzip.BestSpeed)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	_, err = gzWriter.Write(bytesValue)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	gzWriter.Close()
 
 	reader := bytes.NewReader(b.Bytes())
 	request, err := http.NewRequest(http.MethodPost, c.endpoint+"/updates/", reader)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Content-Encoding", "gzip")
@@ -74,12 +74,11 @@ func (c *Collector) sendBatchRequest(values []Metrics) {
 	client := &http.Client{}
 	resp, clientErr := client.Do(request)
 	if clientErr != nil {
-		log.Println(clientErr)
-		return
+		return clientErr
 	}
 	log.Println(resp)
 
-	defer resp.Body.Close()
+	resp.Body.Close()
 }
 
 func (c *Collector) updateStat() {
