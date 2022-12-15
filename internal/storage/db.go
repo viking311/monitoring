@@ -50,36 +50,25 @@ func (dbs *DBStorage) Delete(key string) error {
 }
 
 func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {
-	metric := entity.Metrics{}
-
-	rows, err := dbs.db.Query("SELECT id, mtype, delta, value FROM metrics WHERE mkey=$1", key)
-	if err != nil {
+	var (
+		metric entity.Metrics
+		delta  sql.NullInt64
+		value  sql.NullFloat64
+	)
+	if err := dbs.db.QueryRow("SELECT id, mtype, delta, value FROM metrics WHERE mkey=$1", key).Scan(&metric.ID, &metric.MType, &delta, &value); err != nil {
+		if err == sql.ErrNoRows {
+			return metric, fmt.Errorf("not found metric with key '%s'", key)
+		}
 		return metric, err
 	}
-	for rows.Next() {
-		var (
-			delta sql.NullInt64
-			value sql.NullFloat64
-		)
-		err := rows.Scan(&metric.ID, &metric.MType, &delta, &value)
-		if err != nil {
-			continue
-		}
-		if delta.Valid {
-			val64 := uint64(delta.Int64)
-			metric.Delta = &val64
-		}
-
-		if value.Valid {
-			metric.Value = &value.Float64
-		}
-
-		err = rows.Err()
-		if err != nil {
-			return metric, err
-		}
+	if delta.Valid {
+		val64 := uint64(delta.Int64)
+		metric.Delta = &val64
 	}
 
+	if value.Valid {
+		metric.Value = &value.Float64
+	}
 	return metric, nil
 }
 
