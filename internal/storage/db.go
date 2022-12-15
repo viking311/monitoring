@@ -4,20 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/viking311/monitoring/internal/entity"
 )
 
 type DBStorage struct {
 	db     *sql.DB
-	mx     sync.RWMutex
 	upChan UpdateChannel
 }
 
 func (dbs *DBStorage) Update(value entity.Metrics) {
-	dbs.mx.Lock()
-	defer dbs.mx.Unlock()
 	delta := sql.NullInt64{}
 	if value.Delta != nil {
 		delta.Int64 = int64(*value.Delta)
@@ -42,9 +38,6 @@ func (dbs *DBStorage) Update(value entity.Metrics) {
 }
 
 func (dbs *DBStorage) Delete(key string) {
-	dbs.mx.Lock()
-	defer dbs.mx.Unlock()
-
 	_, err := dbs.db.Exec("DELETE FROM metrics WHERE mkey=$1", key)
 	if err != nil {
 		log.Println(err)
@@ -52,9 +45,6 @@ func (dbs *DBStorage) Delete(key string) {
 }
 
 func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {
-	dbs.mx.RLock()
-	defer dbs.mx.RUnlock()
-
 	metric := entity.Metrics{}
 
 	rows, err := dbs.db.Query("SELECT id, mtype, delta, value FROM metrics WHERE mkey=$1", key)
@@ -92,9 +82,6 @@ func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {
 }
 
 func (dbs *DBStorage) GetAll() []entity.Metrics {
-	dbs.mx.RLock()
-	defer dbs.mx.RUnlock()
-
 	var count uint64
 	err := dbs.db.QueryRow("SELECT COUNT(*) FROM metrics").Scan(&count)
 	if err != nil {
@@ -151,9 +138,6 @@ func (dbs *DBStorage) GetUpdateChannal() UpdateChannel {
 }
 
 func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
-	dbs.mx.Lock()
-	defer dbs.mx.Unlock()
-
 	tx, err := dbs.db.Begin()
 	if err != nil {
 		log.Println(err)
@@ -217,7 +201,6 @@ func NewDBStorage(db *sql.DB) (*DBStorage, error) {
 
 	return &DBStorage{
 		db:     db,
-		mx:     sync.RWMutex{},
 		upChan: make(UpdateChannel),
 	}, nil
 }
