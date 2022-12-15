@@ -55,7 +55,12 @@ func (juh *JSONUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	juh.storage.Update(metr)
+	err = juh.storage.Update(metr)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	currentValue, err := juh.storage.GetByKey(metr.GetKey())
 	if err != nil {

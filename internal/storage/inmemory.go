@@ -14,7 +14,7 @@ type InMemoryStorage struct {
 	upChan UpdateChannel
 }
 
-func (ims *InMemoryStorage) Update(value entity.Metrics) {
+func (ims *InMemoryStorage) Update(value entity.Metrics) error {
 	ims.mx.Lock()
 	defer ims.mx.Unlock()
 
@@ -32,6 +32,8 @@ func (ims *InMemoryStorage) Update(value entity.Metrics) {
 	case ims.upChan <- struct{}{}:
 	default:
 	}
+
+	return nil
 }
 
 func (ims *InMemoryStorage) Delete(key string) {

@@ -55,7 +55,12 @@ func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		}
 		metric.Delta = &mValue
 	}
-	uh.storage.Update(metric)
+	err := uh.storage.Update(metric)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func NewUpdatePlainTextHandler(s storage.Repository) *UpdatePlainTextHandler {

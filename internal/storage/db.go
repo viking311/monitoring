@@ -13,7 +13,7 @@ type DBStorage struct {
 	upChan UpdateChannel
 }
 
-func (dbs *DBStorage) Update(value entity.Metrics) {
+func (dbs *DBStorage) Update(value entity.Metrics) error {
 	delta := sql.NullInt64{}
 	if value.Delta != nil {
 		delta.Int64 = int64(*value.Delta)
@@ -28,13 +28,15 @@ func (dbs *DBStorage) Update(value entity.Metrics) {
 	}
 	_, err := dbs.db.Exec("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey) DO UPDATE SET delta=metrics.delta + $6, value=$7", value.GetKey(), value.ID, value.MType, delta, floatValue, delta, floatValue)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	select {
 	case dbs.upChan <- struct{}{}:
 	default:
 	}
+
+	return nil
 }
 
 func (dbs *DBStorage) Delete(key string) {
