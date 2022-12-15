@@ -79,6 +79,7 @@ func (c *Collector) sendBatchRequest(values []Metrics) error {
 	log.Println(resp)
 
 	resp.Body.Close()
+	return nil
 }
 
 func (c *Collector) updateStat() {
