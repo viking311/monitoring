@@ -57,8 +57,11 @@ func (sw *SnapshotWriter) Receive() {
 func (sw *SnapshotWriter) dump() {
 	sw.mx.Lock()
 	defer sw.mx.Unlock()
-
-	for _, v := range sw.store.GetAll() {
+	values, err := sw.store.GetAll()
+	if err != nil {
+		log.Println(err)
+	}
+	for _, v := range values {
 		data, err := json.Marshal(v)
 		if err != nil {
 			log.Println(err)
@@ -70,7 +73,7 @@ func (sw *SnapshotWriter) dump() {
 			log.Println(err)
 		}
 	}
-	err := sw.file.Truncate(0)
+	err = sw.file.Truncate(0)
 	if err != nil {
 		log.Println(err)
 	}

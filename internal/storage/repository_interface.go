@@ -8,7 +8,7 @@ type Repository interface {
 	Update(value entity.Metrics) error
 	Delete(key string) error
 	GetByKey(key string) (entity.Metrics, error)
-	GetAll() []entity.Metrics
+	GetAll() ([]entity.Metrics, error)
 	GetUpdateChannal() UpdateChannel
 	BatchUpdate([]entity.Metrics) error
 }

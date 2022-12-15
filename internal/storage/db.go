@@ -52,7 +52,6 @@ func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {
 
 	rows, err := dbs.db.Query("SELECT id, mtype, delta, value FROM metrics WHERE mkey=$1", key)
 	if err != nil {
-		log.Println(err)
 		return metric, err
 	}
 	for rows.Next() {
@@ -62,7 +61,6 @@ func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {
 		)
 		err := rows.Scan(&metric.ID, &metric.MType, &delta, &value)
 		if err != nil {
-			log.Println(err)
 			continue
 		}
 		if delta.Valid {
@@ -76,7 +74,6 @@ func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {
 
 		err = rows.Err()
 		if err != nil {
-			log.Println(err)
 			return metric, err
 		}
 	}
@@ -84,25 +81,22 @@ func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {
 	return metric, nil
 }
 
-func (dbs *DBStorage) GetAll() []entity.Metrics {
+func (dbs *DBStorage) GetAll() ([]entity.Metrics, error) {
 	var count uint64
 	err := dbs.db.QueryRow("SELECT COUNT(*) FROM metrics").Scan(&count)
 	if err != nil {
-		log.Println(err)
-		return []entity.Metrics{}
+		return []entity.Metrics{}, err
 	}
 
 	if count == 0 {
-		return []entity.Metrics{}
+		return []entity.Metrics{}, nil
 	}
 
-	slice := make([]entity.Metrics, count)
-	i := 0
+	slice := make([]entity.Metrics, 0, count)
 
 	rows, err := dbs.db.Query("SELECT id, mtype, delta, value FROM metrics")
 	if err != nil {
-		log.Println(err)
-		return []entity.Metrics{}
+		return []entity.Metrics{}, err
 	}
 
 	for rows.Next() {
@@ -114,8 +108,7 @@ func (dbs *DBStorage) GetAll() []entity.Metrics {
 
 		err := rows.Scan(&metric.ID, &metric.MType, &delta, &value)
 		if err != nil {
-			log.Println(err)
-			continue
+			return []entity.Metrics{}, err
 		}
 		if delta.Valid {
 			val64 := uint64(delta.Int64)
@@ -125,15 +118,14 @@ func (dbs *DBStorage) GetAll() []entity.Metrics {
 		if value.Valid {
 			metric.Value = &value.Float64
 		}
-		slice[i] = metric
-		i++
+		slice = append(slice, metric)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Println(err)
+		return []entity.Metrics{}, err
 	}
 
-	return slice
+	return slice, nil
 }
 
 func (dbs *DBStorage) GetUpdateChannal() UpdateChannel {
