@@ -9,8 +9,9 @@ import (
 )
 
 type DBStorage struct {
-	db     *sql.DB
-	upChan UpdateChannel
+	db           *sql.DB
+	upChan       UpdateChannel
+	isSendNotify bool
 }
 
 func (dbs *DBStorage) Update(value entity.Metrics) error {
@@ -31,9 +32,10 @@ func (dbs *DBStorage) Update(value entity.Metrics) error {
 		return err
 	}
 
-	select {
-	case dbs.upChan <- struct{}{}:
-	default:
+	if dbs.isSendNotify {
+		go func() {
+			dbs.upChan <- struct{}{}
+		}()
 	}
 
 	return nil
@@ -184,7 +186,7 @@ func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 	return nil
 }
 
-func NewDBStorage(db *sql.DB) (*DBStorage, error) {
+func NewDBStorage(db *sql.DB, isSendNotify bool) (*DBStorage, error) {
 	if db == nil {
 		return nil, fmt.Errorf("db instance is needed")
 	}
@@ -195,7 +197,8 @@ func NewDBStorage(db *sql.DB) (*DBStorage, error) {
 	}
 
 	return &DBStorage{
-		db:     db,
-		upChan: make(UpdateChannel),
+		db:           db,
+		upChan:       make(UpdateChannel),
+		isSendNotify: isSendNotify,
 	}, nil
 }
