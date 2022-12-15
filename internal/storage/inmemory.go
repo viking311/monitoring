@@ -36,10 +36,12 @@ func (ims *InMemoryStorage) Update(value entity.Metrics) error {
 	return nil
 }
 
-func (ims *InMemoryStorage) Delete(key string) {
+func (ims *InMemoryStorage) Delete(key string) error {
 	ims.mx.Lock()
 	defer ims.mx.Unlock()
 	delete(ims.data, key)
+
+	return nil
 }
 
 func (ims *InMemoryStorage) GetByKey(key string) (entity.Metrics, error) {

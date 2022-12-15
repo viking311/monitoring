@@ -39,11 +39,12 @@ func (dbs *DBStorage) Update(value entity.Metrics) error {
 	return nil
 }
 
-func (dbs *DBStorage) Delete(key string) {
+func (dbs *DBStorage) Delete(key string) error {
 	_, err := dbs.db.Exec("DELETE FROM metrics WHERE mkey=$1", key)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
+	return nil
 }
 
 func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {

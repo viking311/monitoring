@@ -6,7 +6,7 @@ type UpdateChannel chan struct{}
 
 type Repository interface {
 	Update(value entity.Metrics) error
-	Delete(key string)
+	Delete(key string) error
 	GetByKey(key string) (entity.Metrics, error)
 	GetAll() []entity.Metrics
 	GetUpdateChannal() UpdateChannel
