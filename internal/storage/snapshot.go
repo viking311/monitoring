@@ -19,7 +19,7 @@ type SnapshotWriter struct {
 	writer        bufio.Writer
 }
 
-func (sw *SnapshotWriter) Load() {
+func (sw *SnapshotWriter) Load() error {
 	scanner := bufio.NewScanner(sw.file)
 	buf := make([]byte, 0, 64*1024)
 	scanner.Buffer(buf, 1024*1024)
@@ -27,12 +27,12 @@ func (sw *SnapshotWriter) Load() {
 		metric := entity.Metrics{}
 		err := json.Unmarshal(scanner.Bytes(), &metric)
 		if err != nil {
-			log.Println(err)
-			continue
+			return err
 		}
 		sw.store.Update(metric)
 	}
 	log.Println("data loaded from file " + sw.file.Name())
+	return nil
 }
 
 func (sw *SnapshotWriter) Close() {

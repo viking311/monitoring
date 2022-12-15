@@ -51,7 +51,10 @@ func main() {
 		}
 
 		if *server.Config.Restore {
-			sw.Load()
+			err = sw.Load()
+			if err != nil {
+				log.Println(err)
+			}
 		}
 
 		go sw.Receive()
