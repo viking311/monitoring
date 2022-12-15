@@ -36,8 +36,14 @@ func (sw *SnapshotWriter) Load() {
 }
 
 func (sw *SnapshotWriter) Close() {
-	sw.dump()
-	sw.file.Close()
+	err := sw.dump()
+	if err != nil {
+		log.Println(err)
+	}
+	err = sw.file.Close()
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (sw *SnapshotWriter) Receive() {
@@ -47,14 +53,14 @@ func (sw *SnapshotWriter) Receive() {
 		for range ticker.C {
 			err := sw.dump()
 			if err != nil {
-				log.Panic(err)
+				log.Println(err)
 			}
 		}
 	} else {
 		for range sw.store.GetUpdateChannal() {
 			err := sw.dump()
 			if err != nil {
-				log.Panic(err)
+				log.Println(err)
 			}
 		}
 	}
@@ -63,6 +69,7 @@ func (sw *SnapshotWriter) Receive() {
 func (sw *SnapshotWriter) dump() error {
 	sw.mx.Lock()
 	defer sw.mx.Unlock()
+
 	values, err := sw.store.GetAll()
 	if err != nil {
 		return err

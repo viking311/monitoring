@@ -9,12 +9,12 @@ import (
 )
 
 type DBStorage struct {
-	db               *sql.DB
-	upChan           UpdateChannel
-	sendUpdateNotify bool
+	db           *sql.DB
+	upChan       UpdateChannel
+	isSendNotify bool
 }
 
-func (dbs *DBStorage) Update(value entity.Metrics) {
+func (dbs *DBStorage) Update(value entity.Metrics) error {
 	delta := sql.NullInt64{}
 	if value.Delta != nil {
 		delta.Int64 = int64(*value.Delta)
@@ -29,65 +29,54 @@ func (dbs *DBStorage) Update(value entity.Metrics) {
 	}
 	_, err := dbs.db.Exec("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey) DO UPDATE SET delta=metrics.delta + $6, value=$7", value.GetKey(), value.ID, value.MType, delta, floatValue, delta, floatValue)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
-	if dbs.sendUpdateNotify {
-		dbs.upChan <- struct{}{}
+	if dbs.isSendNotify {
+		go func() {
+			dbs.upChan <- struct{}{}
+		}()
 	}
+
+	return nil
 }
 
-func (dbs *DBStorage) Delete(key string) {
+func (dbs *DBStorage) Delete(key string) error {
 	_, err := dbs.db.Exec("DELETE FROM metrics WHERE mkey=$1", key)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
+	return nil
 }
 
 func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {
-
-	metric := entity.Metrics{}
-
-	rows, err := dbs.db.Query("SELECT id, mtype, delta, value FROM metrics WHERE mkey=$1", key)
-	if err != nil {
-		log.Println(err)
+	var (
+		metric entity.Metrics
+		delta  sql.NullInt64
+		value  sql.NullFloat64
+	)
+	if err := dbs.db.QueryRow("SELECT id, mtype, delta, value FROM metrics WHERE mkey=$1", key).Scan(&metric.ID, &metric.MType, &delta, &value); err != nil {
+		if err == sql.ErrNoRows {
+			return metric, fmt.Errorf("not found metric with key '%s'", key)
+		}
 		return metric, err
 	}
-	for rows.Next() {
-		var (
-			delta sql.NullInt64
-			value sql.NullFloat64
-		)
-		err := rows.Scan(&metric.ID, &metric.MType, &delta, &value)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		if delta.Valid {
-			val64 := uint64(delta.Int64)
-			metric.Delta = &val64
-		}
-
-		if value.Valid {
-			metric.Value = &value.Float64
-		}
-
-		err = rows.Err()
-		if err != nil {
-			log.Println(err)
-			return metric, err
-		}
+	if delta.Valid {
+		val64 := uint64(delta.Int64)
+		metric.Delta = &val64
 	}
 
+	if value.Valid {
+		metric.Value = &value.Float64
+	}
 	return metric, nil
 }
 
 func (dbs *DBStorage) GetAll() ([]entity.Metrics, error) {
-
 	var count uint64
 	err := dbs.db.QueryRow("SELECT COUNT(*) FROM metrics").Scan(&count)
 	if err != nil {
-		return nil, err
+		return []entity.Metrics{}, err
 	}
 
 	if count == 0 {
@@ -98,7 +87,7 @@ func (dbs *DBStorage) GetAll() ([]entity.Metrics, error) {
 
 	rows, err := dbs.db.Query("SELECT id, mtype, delta, value FROM metrics")
 	if err != nil {
-		return nil, err
+		return []entity.Metrics{}, err
 	}
 
 	for rows.Next() {
@@ -110,7 +99,7 @@ func (dbs *DBStorage) GetAll() ([]entity.Metrics, error) {
 
 		err := rows.Scan(&metric.ID, &metric.MType, &delta, &value)
 		if err != nil {
-			return nil, err
+			return []entity.Metrics{}, err
 		}
 		if delta.Valid {
 			val64 := uint64(delta.Int64)
@@ -122,10 +111,9 @@ func (dbs *DBStorage) GetAll() ([]entity.Metrics, error) {
 		}
 		slice = append(slice, metric)
 	}
-
 	err = rows.Err()
 	if err != nil {
-		return nil, err
+		return []entity.Metrics{}, err
 	}
 
 	return slice, nil
@@ -143,7 +131,7 @@ func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 	defer func() {
 		err = tx.Rollback()
 		if err != nil {
-			log.Println(err)
+			log.Println()
 		}
 	}()
 
@@ -177,15 +165,16 @@ func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 		return err
 	}
 
-	select {
-	case dbs.upChan <- struct{}{}:
-	default:
+	if dbs.isSendNotify {
+		go func() {
+			dbs.upChan <- struct{}{}
+		}()
 	}
 
 	return nil
 }
 
-func NewDBStorage(db *sql.DB, sendUpdateNotify bool) (*DBStorage, error) {
+func NewDBStorage(db *sql.DB, isSendNotify bool) (*DBStorage, error) {
 	if db == nil {
 		return nil, fmt.Errorf("db instance is needed")
 	}
@@ -196,8 +185,8 @@ func NewDBStorage(db *sql.DB, sendUpdateNotify bool) (*DBStorage, error) {
 	}
 
 	return &DBStorage{
-		db:               db,
-		upChan:           make(UpdateChannel),
-		sendUpdateNotify: sendUpdateNotify,
+		db:           db,
+		upChan:       make(UpdateChannel),
+		isSendNotify: isSendNotify,
 	}, nil
 }

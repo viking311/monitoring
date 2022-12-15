@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"runtime"
@@ -27,11 +26,11 @@ type Collector struct {
 	hashKey        string
 }
 
-func (c *Collector) sendReport() error {
+func (c *Collector) sendReport() {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
 	if len(c.statCollection.Collection) == 0 {
-		return fmt.Errorf("Metrics were not readed yet")
+		return
 	}
 	values := make([]Metrics, 0, len(c.statCollection.Collection))
 
@@ -42,11 +41,9 @@ func (c *Collector) sendReport() error {
 	}
 	err := c.sendBatchRequest(values)
 	if err != nil {
-		return err
+		log.Println(err)
 	}
 	c.statCollection.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 0}
-
-	return nil
 }
 
 func (c *Collector) sendBatchRequest(values []Metrics) error {
@@ -79,9 +76,9 @@ func (c *Collector) sendBatchRequest(values []Metrics) error {
 	if clientErr != nil {
 		return clientErr
 	}
+	log.Println(resp)
 
 	resp.Body.Close()
-
 	return nil
 }
 
@@ -108,10 +105,7 @@ func (c *Collector) Do() {
 		case <-updateTicker.C:
 			c.updateStat()
 		case <-reportTicker.C:
-			err := c.sendReport()
-			if err != nil {
-				log.Println(err)
-			}
+			c.sendReport()
 		case <-c.signals.C:
 			log.Println("agent interrupted")
 			return

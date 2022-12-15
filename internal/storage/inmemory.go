@@ -9,13 +9,13 @@ import (
 )
 
 type InMemoryStorage struct {
-	data             map[string]entity.Metrics
-	mx               sync.RWMutex
-	upChan           UpdateChannel
-	sendUpdateNotify bool
+	data         map[string]entity.Metrics
+	mx           sync.RWMutex
+	upChan       UpdateChannel
+	isSendNotify bool
 }
 
-func (ims *InMemoryStorage) Update(value entity.Metrics) {
+func (ims *InMemoryStorage) Update(value entity.Metrics) error {
 	ims.mx.Lock()
 	defer ims.mx.Unlock()
 
@@ -29,15 +29,22 @@ func (ims *InMemoryStorage) Update(value entity.Metrics) {
 	} else if value.MType == "gauge" && value.Value != nil {
 		ims.data[value.GetKey()] = value
 	}
-	if ims.sendUpdateNotify {
-		ims.upChan <- struct{}{}
+
+	if ims.isSendNotify {
+		go func() {
+			ims.upChan <- struct{}{}
+		}()
 	}
+
+	return nil
 }
 
-func (ims *InMemoryStorage) Delete(key string) {
+func (ims *InMemoryStorage) Delete(key string) error {
 	ims.mx.Lock()
 	defer ims.mx.Unlock()
 	delete(ims.data, key)
+
+	return nil
 }
 
 func (ims *InMemoryStorage) GetByKey(key string) (entity.Metrics, error) {
@@ -58,6 +65,7 @@ func (ims *InMemoryStorage) GetAll() ([]entity.Metrics, error) {
 
 	slice := make([]entity.Metrics, 0, len(ims.data))
 	for _, item := range ims.data {
+
 		if item.Delta != nil {
 			delta := *item.Delta
 			item.Delta = &delta
@@ -67,8 +75,8 @@ func (ims *InMemoryStorage) GetAll() ([]entity.Metrics, error) {
 			value := *item.Value
 			item.Value = &value
 		}
-		slice = append(slice, item)
 
+		slice = append(slice, item)
 	}
 
 	return slice, nil
@@ -103,11 +111,11 @@ func (ims *InMemoryStorage) BatchUpdate(values []entity.Metrics) error {
 	return nil
 }
 
-func NewInMemoryStorage(sendUpdateNotify bool) *InMemoryStorage {
+func NewInMemoryStorage(isSendNotify bool) *InMemoryStorage {
 	return &InMemoryStorage{
-		data:             make(map[string]entity.Metrics),
-		mx:               sync.RWMutex{},
-		upChan:           make(UpdateChannel),
-		sendUpdateNotify: sendUpdateNotify,
+		data:         make(map[string]entity.Metrics),
+		mx:           sync.RWMutex{},
+		upChan:       make(UpdateChannel),
+		isSendNotify: isSendNotify,
 	}
 }
