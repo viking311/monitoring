@@ -31,11 +31,7 @@ func (dbs *DBStorage) Update(value entity.Metrics) error {
 		return err
 	}
 
-	if dbs.isSendNotify {
-		go func() {
-			dbs.upChan <- struct{}{}
-		}()
-	}
+	dbs.notify()
 
 	return nil
 }
@@ -45,6 +41,9 @@ func (dbs *DBStorage) Delete(key string) error {
 	if err != nil {
 		return err
 	}
+
+	dbs.notify()
+
 	return nil
 }
 
@@ -159,13 +158,17 @@ func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 		return err
 	}
 
+	dbs.notify()
+
+	return nil
+}
+
+func (dbs *DBStorage) notify() {
 	if dbs.isSendNotify {
 		go func() {
 			dbs.upChan <- struct{}{}
 		}()
 	}
-
-	return nil
 }
 
 func NewDBStorage(db *sql.DB, isSendNotify bool) (*DBStorage, error) {

@@ -30,11 +30,7 @@ func (ims *InMemoryStorage) Update(value entity.Metrics) error {
 		ims.data[value.GetKey()] = value
 	}
 
-	if ims.isSendNotify {
-		go func() {
-			ims.upChan <- struct{}{}
-		}()
-	}
+	ims.notify()
 
 	return nil
 }
@@ -43,6 +39,8 @@ func (ims *InMemoryStorage) Delete(key string) error {
 	ims.mx.Lock()
 	defer ims.mx.Unlock()
 	delete(ims.data, key)
+
+	ims.notify()
 
 	return nil
 }
@@ -103,13 +101,18 @@ func (ims *InMemoryStorage) BatchUpdate(values []entity.Metrics) error {
 		}
 	}
 
+	ims.notify()
+
+	return nil
+}
+
+func (ims *InMemoryStorage) notify() {
 	if ims.isSendNotify {
 		go func() {
 			ims.upChan <- struct{}{}
 		}()
 	}
 
-	return nil
 }
 
 func NewInMemoryStorage(isSendNotify bool) *InMemoryStorage {
