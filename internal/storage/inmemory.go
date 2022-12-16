@@ -103,9 +103,10 @@ func (ims *InMemoryStorage) BatchUpdate(values []entity.Metrics) error {
 		}
 	}
 
-	select {
-	case ims.upChan <- struct{}{}:
-	default:
+	if ims.isSendNotify {
+		go func() {
+			ims.upChan <- struct{}{}
+		}()
 	}
 
 	return nil
