@@ -16,6 +16,7 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	values, err := glh.storage.GetAll()
 	if err != nil {
 		logger.Logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	for _, v := range values {
 		body += "<tr><td>" + v.ID + "</td><td>" + v.GetStringValue() + "</td></tr>"
@@ -25,6 +26,7 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write([]byte(body))
 	if err != nil {
 		logger.Logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
