@@ -34,18 +34,18 @@ func (sw *SnapshotWriter) Load() error {
 			return err
 		}
 	}
-	logger.Logger.Info("data loaded from file " + sw.file.Name())
+	logger.Info("data loaded from file " + sw.file.Name())
 	return nil
 }
 
 func (sw *SnapshotWriter) Close() {
 	err := sw.dump()
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 	}
 	err = sw.file.Close()
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 	}
 }
 
@@ -56,14 +56,14 @@ func (sw *SnapshotWriter) Receive() {
 		for range ticker.C {
 			err := sw.dump()
 			if err != nil {
-				logger.Logger.Error(err)
+				logger.Error(err)
 			}
 		}
 	} else {
 		for range sw.store.GetUpdateChannal() {
 			err := sw.dump()
 			if err != nil {
-				logger.Logger.Error(err)
+				logger.Error(err)
 			}
 		}
 	}
@@ -100,7 +100,7 @@ func (sw *SnapshotWriter) dump() error {
 	if err != nil {
 		return err
 	}
-	logger.Logger.Debug("data stored to file " + sw.file.Name())
+	logger.Debug("data stored to file " + sw.file.Name())
 
 	return nil
 }

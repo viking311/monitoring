@@ -18,14 +18,14 @@ func (jbuh *JSONBatchUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	contentType := r.Header.Get("Content-Type")
 
 	if contentType != "application/json" {
-		logger.Logger.Error("incorrect content type")
+		logger.Error("incorrect content type")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -35,7 +35,7 @@ func (jbuh *JSONBatchUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 
 	err = json.Unmarshal(body, &metricsCollection)
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -51,7 +51,7 @@ func (jbuh *JSONBatchUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 
 	err = jbuh.storage.BatchUpdate(cleanMetrics[:i])
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

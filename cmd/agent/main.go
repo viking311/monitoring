@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	logger.Logger.Debug("start agent")
-	defer logger.Logger.Debug("stop agent")
+	logger.Debug("start agent")
+	defer logger.Debug("stop agent")
 
 	collector := entity.NewCollector("http://"+*agent.Config.Address, *agent.Config.PollInterval, *agent.Config.ReportInterval, *agent.Config.HashKey)
 

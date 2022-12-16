@@ -15,7 +15,7 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body := "<html><body><table border=1><tr><th>Metric</th><th>Value</th></tr>"
 	values, err := glh.storage.GetAll()
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	for _, v := range values {
@@ -25,7 +25,7 @@ func (glh GetListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/html")
 	_, err = w.Write([]byte(body))
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

@@ -22,14 +22,14 @@ var (
 
 func main() {
 
-	logger.Logger.Info("server start")
+	logger.Info("server start")
 
-	defer logger.Logger.Info("server stop")
+	defer logger.Info("server stop")
 
 	if len(*server.Config.DatabaseDsn) > 0 {
 		err := initDB(*server.Config.DatabaseDsn)
 		if err != nil {
-			logger.Logger.Fatal(err)
+			logger.Fatal(err)
 		}
 	}
 	isSendNotify := *server.Config.StoreInterval == 0
@@ -39,7 +39,7 @@ func main() {
 		var err error
 		store, err = storage.NewDBStorage(db, isSendNotify)
 		if err != nil {
-			logger.Logger.Fatal(err)
+			logger.Fatal(err)
 		}
 	}
 
@@ -48,13 +48,13 @@ func main() {
 
 		sw, err = storage.NewSnapshotWriter(store, *server.Config.StoreFile, *server.Config.StoreInterval)
 		if err != nil {
-			logger.Logger.Fatal(err)
+			logger.Fatal(err)
 		}
 
 		if *server.Config.Restore {
 			err = sw.Load()
 			if err != nil {
-				logger.Logger.Error(err)
+				logger.Error(err)
 			}
 		}
 
@@ -74,7 +74,6 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RealIP)
-	// r.Use(middleware.Logger)
 	r.Use(middlewareLogger.Logger("router", logger.Logger))
 	r.Use(middleware.Recoverer)
 	r.Use(server.Gzip)
@@ -100,7 +99,7 @@ func main() {
 
 	jsonBatchUpdateHandler := handlers.NewJSONBatchUpdateHandler(store, *server.Config.HashKey)
 	r.Post("/updates/", jsonBatchUpdateHandler.ServeHTTP)
-	logger.Logger.Fatal(http.ListenAndServe(*server.Config.Address, r))
+	logger.Fatal(http.ListenAndServe(*server.Config.Address, r))
 }
 
 func initDB(dsn string) error {

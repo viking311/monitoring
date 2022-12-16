@@ -42,7 +42,7 @@ func (c *Collector) sendReport() {
 	}
 	err := c.sendBatchRequest(values)
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 	}
 	c.statCollection.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 0}
 }
@@ -77,7 +77,7 @@ func (c *Collector) sendBatchRequest(values []Metrics) error {
 	if clientErr != nil {
 		return clientErr
 	}
-	logger.Logger.WithFields(logrus.Fields{
+	logger.WithFields(logrus.Fields{
 		"request": request,
 		"resonse": resp,
 	}).Info("Metrics were sended")
@@ -95,7 +95,7 @@ func (c *Collector) updateStat() {
 }
 
 func (c *Collector) Do() {
-	logger.Logger.Info("start metrics watching")
+	logger.Info("start metrics watching")
 	updateTicker := time.NewTicker(c.pollInterval)
 	reportTicker := time.NewTicker(c.reportInterval)
 
@@ -110,8 +110,8 @@ func (c *Collector) Do() {
 			c.updateStat()
 		case <-reportTicker.C:
 			c.sendReport()
-		case <-c.signals.C:
-			logger.Logger.Info("agent interrupted")
+		case sig := <-c.signals.C:
+			logger.WithField("signal", sig).Info("agent interrupted")
 			return
 		}
 

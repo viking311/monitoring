@@ -27,10 +27,10 @@ func Gzip(nextHandler http.Handler) http.Handler {
 
 		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
-			logger.Logger.Error(err)
+			logger.Error(err)
 			_, ioErr := io.WriteString(w, err.Error())
 			if ioErr != nil {
-				logger.Logger.Error(ioErr)
+				logger.Error(ioErr)
 			}
 			return
 		}
@@ -49,7 +49,7 @@ func UnGzip(nextHandler http.Handler) http.Handler {
 		if r.Header.Get(`Content-Encoding`) == `gzip` {
 			gz, err := gzip.NewReader(r.Body)
 			if err != nil {
-				logger.Logger.Error(err)
+				logger.Error(err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}

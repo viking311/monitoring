@@ -17,7 +17,7 @@ type GetValueHandler struct {
 func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	typeName := strings.ToLower(chi.URLParam(r, "type"))
 	if typeName != "gauge" && typeName != "counter" {
-		logger.Logger.Error("unknown metric type")
+		logger.Error("unknown metric type")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -38,7 +38,7 @@ func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("application-type", "text/plain")
 			_, err := w.Write([]byte(val.GetStringValue()))
 			if err != nil {
-				logger.Logger.Error(err)
+				logger.Error(err)
 			}
 		} else {
 			w.WriteHeader(http.StatusNotFound)

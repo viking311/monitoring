@@ -22,13 +22,13 @@ func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	metricValue := chi.URLParam(r, "value")
 
 	if typeName == "" || metricName == "" || metricValue == "" {
-		logger.Logger.Error("require params are empty")
+		logger.Error("require params are empty")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	if typeName != "gauge" && typeName != "counter" {
-		logger.Logger.Warn("unknown metric type")
+		logger.Warn("unknown metric type")
 		w.WriteHeader(http.StatusNotImplemented)
 		return
 	}
@@ -40,7 +40,7 @@ func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	case "gauge":
 		mValue, err := strconv.ParseFloat(metricValue, 64)
 		if err != nil {
-			logger.Logger.Error(err)
+			logger.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -49,7 +49,7 @@ func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	case "counter":
 		mValue, err := strconv.ParseUint(metricValue, 10, 64)
 		if err != nil {
-			logger.Logger.Error(err)
+			logger.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -57,7 +57,7 @@ func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 	err := uh.storage.Update(metric)
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

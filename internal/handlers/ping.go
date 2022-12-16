@@ -15,14 +15,14 @@ type PingHandler struct {
 
 func (ph *PingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if ph.db == nil {
-		logger.Logger.Debug("db is nil")
+		logger.Debug("db is nil")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 1*time.Second)
 	defer cancel()
 	if err := ph.db.PingContext(ctx); err != nil {
-		logger.Logger.Error(err)
+		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
