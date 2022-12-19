@@ -105,7 +105,7 @@ func (c *Collector) updateMemStat() {
 	c.statCollection.UpdateMemStat(v)
 }
 
-func (c *Collector) updateCpuStat() {
+func (c *Collector) updateCPUStat() {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 
@@ -123,10 +123,10 @@ func (c *Collector) updateStatWorker(ch <-chan struct{}) {
 	}
 }
 
-func (c *Collector) updateCpuMemWorker(ch <-chan struct{}) {
+func (c *Collector) updateCPUMemWorker(ch <-chan struct{}) {
 	for range ch {
 		c.updateMemStat()
-		c.updateCpuStat()
+		c.updateCPUStat()
 	}
 }
 
@@ -145,7 +145,7 @@ func (c *Collector) Do() {
 	go c.updateStatWorker(statCh)
 
 	cpuCh := make(chan struct{})
-	go c.updateCpuMemWorker(cpuCh)
+	go c.updateCPUMemWorker(cpuCh)
 
 	reportCh := make(chan struct{})
 	go c.sendReportWorker(reportCh)
@@ -158,11 +158,9 @@ func (c *Collector) Do() {
 	for {
 		select {
 		case <-updateTicker.C:
-			// c.updateStat()
 			statCh <- struct{}{}
 			cpuCh <- struct{}{}
 		case <-reportTicker.C:
-			// c.sendReport()
 			reportCh <- struct{}{}
 		case sig := <-c.signals.C:
 			logger.WithField("signal", sig).Info("agent interrupted")
@@ -187,6 +185,7 @@ func NewCollector(endpoint string, pollInterval time.Duration, reportInterval ti
 
 	collector.updateStat()
 	collector.updateMemStat()
-	collector.updateCpuStat()
+	collector.updateCPUStat()
+
 	return &collector
 }

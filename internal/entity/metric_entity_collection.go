@@ -51,15 +51,15 @@ func (mec *MetricEntityCollection) UpdateMetric(stat runtime.MemStats) {
 	logger.Debug("metrics updated")
 }
 
-func (mce *MetricEntityCollection) UpdateMemStat(stat *mem.VirtualMemoryStat) {
-	mce.Collection["TotalMemory"] = &GaugeMetricEntity{Name: "TotalMemory", Value: float64(stat.Total)}
-	mce.Collection["FreeMemory"] = &GaugeMetricEntity{Name: "FreeMemory", Value: float64(stat.Free)}
+func (mec *MetricEntityCollection) UpdateMemStat(stat *mem.VirtualMemoryStat) {
+	mec.Collection["TotalMemory"] = &GaugeMetricEntity{Name: "TotalMemory", Value: float64(stat.Total)}
+	mec.Collection["FreeMemory"] = &GaugeMetricEntity{Name: "FreeMemory", Value: float64(stat.Free)}
 }
 
-func (mce *MetricEntityCollection) UpdateCPUStat(cp []float64) {
+func (mec *MetricEntityCollection) UpdateCPUStat(cp []float64) {
 	for i := 1; i <= runtime.NumCPU(); i++ {
 		key := fmt.Sprintf("CPUutilization%d", i)
-		mce.Collection[key] = &GaugeMetricEntity{Name: key, Value: cp[i-1]}
+		mec.Collection[key] = &GaugeMetricEntity{Name: key, Value: cp[i-1]}
 	}
 }
 
