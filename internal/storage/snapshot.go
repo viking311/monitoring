@@ -3,12 +3,12 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
-	"log"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/viking311/monitoring/internal/entity"
+	"github.com/viking311/monitoring/internal/logger"
 )
 
 type SnapshotWriter struct {
@@ -19,7 +19,7 @@ type SnapshotWriter struct {
 	writer        bufio.Writer
 }
 
-func (sw *SnapshotWriter) Load() {
+func (sw *SnapshotWriter) Load() error {
 	scanner := bufio.NewScanner(sw.file)
 	buf := make([]byte, 0, 64*1024)
 	scanner.Buffer(buf, 1024*1024)
@@ -27,17 +27,26 @@ func (sw *SnapshotWriter) Load() {
 		metric := entity.Metrics{}
 		err := json.Unmarshal(scanner.Bytes(), &metric)
 		if err != nil {
-			log.Println(err)
-			continue
+			return err
 		}
-		sw.store.Update(metric)
+		err = sw.store.Update(metric)
+		if err != nil {
+			return err
+		}
 	}
-	log.Println("data loaded from file " + sw.file.Name())
+	logger.Info("data loaded from file " + sw.file.Name())
+	return nil
 }
 
 func (sw *SnapshotWriter) Close() {
-	sw.dump()
-	sw.file.Close()
+	err := sw.dump()
+	if err != nil {
+		logger.Error(err)
+	}
+	err = sw.file.Close()
+	if err != nil {
+		logger.Error(err)
+	}
 }
 
 func (sw *SnapshotWriter) Receive() {
@@ -45,32 +54,55 @@ func (sw *SnapshotWriter) Receive() {
 		ticker := time.NewTicker(sw.storeInterval)
 		defer ticker.Stop()
 		for range ticker.C {
-			sw.dump()
+			err := sw.dump()
+			if err != nil {
+				logger.Error(err)
+			}
 		}
 	} else {
 		for range sw.store.GetUpdateChannal() {
-			sw.dump()
+			err := sw.dump()
+			if err != nil {
+				logger.Error(err)
+			}
 		}
 	}
 }
 
-func (sw *SnapshotWriter) dump() {
+func (sw *SnapshotWriter) dump() error {
 	sw.mx.Lock()
 	defer sw.mx.Unlock()
 
-	for _, v := range sw.store.GetAll() {
+	values, err := sw.store.GetAll()
+	if err != nil {
+		return err
+	}
+	for _, v := range values {
 		data, err := json.Marshal(v)
 		if err != nil {
-			log.Println(err)
-			continue
+			return err
 		}
 
-		sw.writer.WriteString(string(data) + "\n")
+		_, err = sw.writer.WriteString(string(data) + "\n")
+		if err != nil {
+			return err
+		}
 	}
-	sw.file.Truncate(0)
-	sw.file.Seek(0, 0)
-	sw.writer.Flush()
-	log.Println("data stored to file " + sw.file.Name())
+	err = sw.file.Truncate(0)
+	if err != nil {
+		return err
+	}
+	_, err = sw.file.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+	err = sw.writer.Flush()
+	if err != nil {
+		return err
+	}
+	logger.Debug("data stored to file " + sw.file.Name())
+
+	return nil
 }
 
 func NewSnapshotWriter(storage Repository, fileName string, storeInterval time.Duration) (*SnapshotWriter, error) {

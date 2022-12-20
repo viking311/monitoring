@@ -10,10 +10,11 @@ type Metrics struct {
 	MType string   `json:"type"`            // параметр, принимающий значение gauge или counter
 	Delta *uint64  `json:"delta,omitempty"` // значение метрики в случае передачи counter
 	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
+	Hash  string   `json:"hash,omitempty"`  // значение хеш-функции
 }
 
 func (m Metrics) GetKey() string {
-	return strings.ToLower(m.ID)
+	return strings.ToLower(m.ID) + "::" + strings.ToLower(m.MType)
 }
 
 func (m Metrics) GetStringValue() string {

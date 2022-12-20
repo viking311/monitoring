@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/viking311/monitoring/internal/logger"
 )
 
 type gzipWriter struct {
@@ -25,7 +27,11 @@ func Gzip(nextHandler http.Handler) http.Handler {
 
 		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
-			io.WriteString(w, err.Error())
+			logger.Error(err)
+			_, ioErr := io.WriteString(w, err.Error())
+			if ioErr != nil {
+				logger.Error(ioErr)
+			}
 			return
 		}
 		defer gz.Close()
@@ -43,6 +49,7 @@ func UnGzip(nextHandler http.Handler) http.Handler {
 		if r.Header.Get(`Content-Encoding`) == `gzip` {
 			gz, err := gzip.NewReader(r.Body)
 			if err != nil {
+				logger.Error(err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}

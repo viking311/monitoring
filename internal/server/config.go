@@ -2,10 +2,10 @@ package server
 
 import (
 	"flag"
-	"log"
 	"time"
 
 	"github.com/caarlos0/env/v6"
+	"github.com/viking311/monitoring/internal/logger"
 )
 
 const (
@@ -13,6 +13,8 @@ const (
 	DefaultStoreInterval = 300 * time.Second
 	DefaultStoreFile     = "/tmp/devops-metrics-db.json"
 	DefaultRestore       = true
+	DefaultHashKey       = ""
+	DefaultDatabaseDsn   = ""
 )
 
 type ServerConfig struct {
@@ -20,19 +22,27 @@ type ServerConfig struct {
 	StoreInterval *time.Duration `env:"STORE_INTERVAL"`
 	StoreFile     *string        `env:"STORE_FILE"`
 	Restore       *bool          `env:"RESTORE"`
+	HashKey       *string        `env:"KEY"`
+	DatabaseDsn   *string        `env:"DATABASE_DSN"`
 }
 
 var Config ServerConfig
 
 func init() {
+	logger.Info("start reading configuration")
+	logger.Debug("reading flags")
+
 	addressFlag := flag.String("a", DefaultAddress, "address to listen")
 	restoreFlag := flag.Bool("r", DefaultRestore, "restore data from file")
 	storeInterval := flag.Duration("i", DefaultStoreInterval, "how often store data to file")
 	storeFile := flag.String("f", DefaultStoreFile, "name of file for storing")
+	hashKey := flag.String("k", DefaultHashKey, "hash key")
+	dbDsn := flag.String("d", DefaultDatabaseDsn, "connection to db")
 	flag.Parse()
 
+	logger.Debug("reading enviroments")
 	if err := env.Parse(&Config); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	if Config.Address == nil {
@@ -50,4 +60,14 @@ func init() {
 	if Config.StoreInterval == nil {
 		Config.StoreInterval = storeInterval
 	}
+
+	if Config.HashKey == nil {
+		Config.HashKey = hashKey
+	}
+
+	if Config.DatabaseDsn == nil {
+		Config.DatabaseDsn = dbDsn
+	}
+
+	logger.Info("finish reading configuration")
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/viking311/monitoring/internal/entity"
+	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
@@ -21,11 +22,13 @@ func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	metricValue := chi.URLParam(r, "value")
 
 	if typeName == "" || metricName == "" || metricValue == "" {
+		logger.Error("require params are empty")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	if typeName != "gauge" && typeName != "counter" {
+		logger.Warn("unknown metric type")
 		w.WriteHeader(http.StatusNotImplemented)
 		return
 	}
@@ -37,6 +40,7 @@ func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	case "gauge":
 		mValue, err := strconv.ParseFloat(metricValue, 64)
 		if err != nil {
+			logger.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -45,12 +49,18 @@ func (uh *UpdatePlainTextHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	case "counter":
 		mValue, err := strconv.ParseUint(metricValue, 10, 64)
 		if err != nil {
+			logger.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		metric.Delta = &mValue
 	}
-	uh.storage.Update(metric)
+	err := uh.storage.Update(metric)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func NewUpdatePlainTextHandler(s storage.Repository) *UpdatePlainTextHandler {

@@ -2,15 +2,17 @@ package entity
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"net/http"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
 	"syscall"
 	"time"
 
+	"github.com/sirupsen/logrus"
+	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/signals"
 )
 
@@ -22,39 +24,66 @@ type Collector struct {
 	stat           runtime.MemStats
 	signals        signals.SignalListener
 	mtx            sync.RWMutex
+	hashKey        string
 }
 
 func (c *Collector) sendReport() {
 	c.mtx.RLock()
 	defer c.mtx.RUnlock()
+	if len(c.statCollection.Collection) == 0 {
+		return
+	}
+	values := make([]Metrics, 0, len(c.statCollection.Collection))
 
 	for _, metric := range c.statCollection.Collection {
-		go c.sendStatRequest(metric.GetUpdateURI(), metric.GetMetricEntity())
+		mc := metric.GetMetricEntity()
+		mc.Hash = MetricsHash(mc, c.hashKey)
+		values = append(values, mc)
+	}
+	err := c.sendBatchRequest(values)
+	if err != nil {
+		logger.Error(err)
 	}
 	c.statCollection.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 0}
 }
 
-func (c *Collector) sendStatRequest(uri string, value Metrics) {
-	bytesValue, err := json.Marshal(value)
+func (c *Collector) sendBatchRequest(values []Metrics) error {
+	bytesValue, err := json.Marshal(values)
 	if err != nil {
-		return
+		return err
 	}
 
-	// bytesValue := []byte(value)
-	reader := bytes.NewReader(bytesValue)
-	request, err := http.NewRequest(http.MethodPost, c.endpoint+uri, reader)
+	var b bytes.Buffer
+	gzWriter, err := gzip.NewWriterLevel(&b, gzip.BestSpeed)
 	if err != nil {
-		return
+		return err
 	}
-	// request.Header.Set("Content-Type", "text/plain")
+	_, err = gzWriter.Write(bytesValue)
+	if err != nil {
+		return err
+	}
+	gzWriter.Close()
+
+	reader := bytes.NewReader(b.Bytes())
+	request, err := http.NewRequest(http.MethodPost, c.endpoint+"/updates/", reader)
+	if err != nil {
+		return err
+	}
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Encoding", "gzip")
 
 	client := &http.Client{}
 	resp, clientErr := client.Do(request)
 	if clientErr != nil {
-		return
+		return clientErr
 	}
-	defer resp.Body.Close()
+	logger.WithFields(logrus.Fields{
+		"request": request,
+		"resonse": resp,
+	}).Info("Metrics were sended")
+
+	resp.Body.Close()
+	return nil
 }
 
 func (c *Collector) updateStat() {
@@ -66,6 +95,7 @@ func (c *Collector) updateStat() {
 }
 
 func (c *Collector) Do() {
+	logger.Info("start metrics watching")
 	updateTicker := time.NewTicker(c.pollInterval)
 	reportTicker := time.NewTicker(c.reportInterval)
 
@@ -80,15 +110,16 @@ func (c *Collector) Do() {
 			c.updateStat()
 		case <-reportTicker.C:
 			c.sendReport()
-		case <-c.signals.C:
-			os.Exit(0)
+		case sig := <-c.signals.C:
+			logger.WithField("signal", sig).Info("agent interrupted")
+			return
 		}
 
 	}
 
 }
 
-func NewCollector(endpoint string, pollInterval time.Duration, reportInterval time.Duration) *Collector {
+func NewCollector(endpoint string, pollInterval time.Duration, reportInterval time.Duration, hashKey string) *Collector {
 	var collector = Collector{
 		endpoint:       strings.TrimSuffix(endpoint, "/"),
 		pollInterval:   pollInterval,
@@ -97,6 +128,7 @@ func NewCollector(endpoint string, pollInterval time.Duration, reportInterval ti
 		stat:           runtime.MemStats{},
 		signals:        signals.NewSignalListener(syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT),
 		mtx:            sync.RWMutex{},
+		hashKey:        hashKey,
 	}
 
 	collector.updateStat()

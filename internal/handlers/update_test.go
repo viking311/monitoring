@@ -12,7 +12,7 @@ import (
 
 func TestUpdateHandler_ServeHTTP(t *testing.T) {
 	// ch := make(chan entity.MetricEntityInterface, 100)
-	s := storage.NewInMemoryStorage()
+	s := storage.NewInMemoryStorage(false)
 	handlerClass := NewUpdatePlainTextHandler(s)
 	r := chi.NewRouter()
 	r.Post("/update/{type}/{name}/{value}", handlerClass.ServeHTTP)

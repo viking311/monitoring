@@ -15,7 +15,7 @@ func TestCollector_sendReport(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ch <- r.Method
 	}))
-	collector := NewCollector(srv.URL, 2*time.Second, 10*time.Second)
+	collector := NewCollector(srv.URL, 2*time.Second, 10*time.Second, "")
 	stat := runtime.MemStats{}
 
 	stat.Alloc = 1
@@ -59,6 +59,6 @@ func TestCollector_sendReport(t *testing.T) {
 		}
 		requestCount++
 	}
-	assert.Equal(t, 29, requestCount)
+	assert.Equal(t, 1, requestCount)
 	assert.Equal(t, true, isAllRequestPost)
 }

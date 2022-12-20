@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/viking311/monitoring/internal/entity"
+	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/storage"
 )
 
@@ -15,13 +17,18 @@ type GetValueHandler struct {
 func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	typeName := strings.ToLower(chi.URLParam(r, "type"))
 	if typeName != "gauge" && typeName != "counter" {
+		logger.Error("unknown metric type")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	valueName := strings.ToLower(chi.URLParam(r, "name"))
 
-	val, err := gvh.storage.GetByKey(valueName)
+	metric := entity.Metrics{
+		ID:    valueName,
+		MType: typeName,
+	}
+	val, err := gvh.storage.GetByKey(metric.GetKey())
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -29,7 +36,10 @@ func (gvh GetValueHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if val.MType == typeName {
 			w.Header().Add("application-type", "text/plain")
-			w.Write([]byte(val.GetStringValue()))
+			_, err := w.Write([]byte(val.GetStringValue()))
+			if err != nil {
+				logger.Error(err)
+			}
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
