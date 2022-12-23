@@ -82,7 +82,7 @@ func (c *Collector) sendBatchRequest(values []Metrics) error {
 	logger.WithFields(logrus.Fields{
 		"request": request,
 		"resonse": resp,
-	}).Info("Metrics were sended")
+	}).Info("Metrics were sent")
 
 	resp.Body.Close()
 
