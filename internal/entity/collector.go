@@ -89,7 +89,9 @@ func (c *Collector) sendBatchRequest(values []Metrics) error {
 	return nil
 }
 
-func (c *Collector) updateStat() {
+func (c *Collector) updateStat(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 
@@ -97,7 +99,9 @@ func (c *Collector) updateStat() {
 	c.statCollection.UpdateMetric(c.stat)
 }
 
-func (c *Collector) updateMemStat() {
+func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 
@@ -105,7 +109,9 @@ func (c *Collector) updateMemStat() {
 	c.statCollection.UpdateMemStat(v)
 }
 
-func (c *Collector) updateCPUStat() {
+func (c *Collector) updateCPUStat(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 
@@ -117,18 +123,18 @@ func (c *Collector) updateCPUStat() {
 	c.statCollection.UpdateCPUStat(cpu)
 }
 
-func (c *Collector) updateStatWorker(ch <-chan struct{}) {
-	for range ch {
-		c.updateStat()
-	}
-}
+// func (c *Collector) updateStatWorker(ch <-chan struct{}) {
+// 	for range ch {
+// 		c.updateStat()
+// 	}
+// }
 
-func (c *Collector) updateCPUMemWorker(ch <-chan struct{}) {
-	for range ch {
-		c.updateMemStat()
-		c.updateCPUStat()
-	}
-}
+// func (c *Collector) updateCPUMemWorker(ch <-chan struct{}) {
+// 	for range ch {
+// 		c.updateMemStat()
+// 		c.updateCPUStat()
+// 	}
+// }
 
 func (c *Collector) sendReportWorker(ch <-chan struct{}) {
 	for range ch {
@@ -141,12 +147,6 @@ func (c *Collector) Do() {
 	updateTicker := time.NewTicker(c.pollInterval)
 	reportTicker := time.NewTicker(c.reportInterval)
 
-	statCh := make(chan struct{})
-	go c.updateStatWorker(statCh)
-
-	cpuCh := make(chan struct{})
-	go c.updateCPUMemWorker(cpuCh)
-
 	reportCh := make(chan struct{})
 	go c.sendReportWorker(reportCh)
 
@@ -158,8 +158,14 @@ func (c *Collector) Do() {
 	for {
 		select {
 		case <-updateTicker.C:
-			statCh <- struct{}{}
-			cpuCh <- struct{}{}
+			wg := &sync.WaitGroup{}
+			wg.Add(3)
+
+			go c.updateStat(wg)
+			go c.updateMemStat(wg)
+			go c.updateCPUStat(wg)
+
+			wg.Wait()
 		case <-reportTicker.C:
 			reportCh <- struct{}{}
 		case sig := <-c.signals.C:
@@ -183,9 +189,14 @@ func NewCollector(endpoint string, pollInterval time.Duration, reportInterval ti
 		hashKey:        hashKey,
 	}
 
-	collector.updateStat()
-	collector.updateMemStat()
-	collector.updateCPUStat()
+	wg := &sync.WaitGroup{}
+	wg.Add(3)
+
+	go collector.updateStat(wg)
+	go collector.updateMemStat(wg)
+	go collector.updateCPUStat(wg)
+
+	wg.Wait()
 
 	return &collector
 }
