@@ -126,11 +126,12 @@ func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		}
-	}()
+	defer tx.Rollback()
+	// defer func() {
+	// 	if err != nil {
+	// 		tx.Rollback()
+	// 	}
+	// }()
 
 	stmt, err := tx.Prepare("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey) DO UPDATE SET delta=metrics.delta + $6, value=$7")
 	if err != nil {
