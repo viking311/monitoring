@@ -71,22 +71,14 @@ func (dbs *DBStorage) GetByKey(key string) (entity.Metrics, error) {
 }
 
 func (dbs *DBStorage) GetAll() ([]entity.Metrics, error) {
-	var count uint64
-	err := dbs.db.QueryRow("SELECT COUNT(*) FROM metrics").Scan(&count)
-	if err != nil {
-		return []entity.Metrics{}, err
-	}
 
-	if count == 0 {
-		return []entity.Metrics{}, nil
-	}
-
-	slice := make([]entity.Metrics, 0, count)
+	var slice []entity.Metrics
 
 	rows, err := dbs.db.Query("SELECT id, mtype, delta, value FROM metrics")
 	if err != nil {
 		return []entity.Metrics{}, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var (
@@ -127,6 +119,11 @@ func (dbs *DBStorage) BatchUpdate(values []entity.Metrics) error {
 		return err
 	}
 	defer tx.Rollback()
+	// defer func() {
+	// 	if err != nil {
+	// 		tx.Rollback()
+	// 	}
+	// }()
 
 	stmt, err := tx.Prepare("INSERT INTO metrics VALUES($1,$2,$3,$4,$5) ON CONFLICT (mkey) DO UPDATE SET delta=metrics.delta + $6, value=$7")
 	if err != nil {

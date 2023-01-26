@@ -1,9 +1,11 @@
 package entity
 
 import (
+	"fmt"
 	"math/rand"
 	"runtime"
 
+	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/viking311/monitoring/internal/logger"
 )
 
@@ -47,6 +49,18 @@ func (mec *MetricEntityCollection) UpdateMetric(stat runtime.MemStats) {
 		mec.Collection["PollCount"] = &CounterMetricEntity{Name: "PollCount", Value: 1}
 	}
 	logger.Debug("metrics updated")
+}
+
+func (mec *MetricEntityCollection) UpdateMemStat(stat *mem.VirtualMemoryStat) {
+	mec.Collection["TotalMemory"] = &GaugeMetricEntity{Name: "TotalMemory", Value: float64(stat.Total)}
+	mec.Collection["FreeMemory"] = &GaugeMetricEntity{Name: "FreeMemory", Value: float64(stat.Free)}
+}
+
+func (mec *MetricEntityCollection) UpdateCPUStat(cp []float64) {
+	for i := 1; i <= runtime.NumCPU(); i++ {
+		key := fmt.Sprintf("CPUutilization%d", i)
+		mec.Collection[key] = &GaugeMetricEntity{Name: key, Value: cp[i-1]}
+	}
 }
 
 func NewMertricCollection() MetricEntityCollection {

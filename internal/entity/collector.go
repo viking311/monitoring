@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/sirupsen/logrus"
 	"github.com/viking311/monitoring/internal/logger"
 	"github.com/viking311/monitoring/internal/signals"
@@ -80,9 +82,10 @@ func (c *Collector) sendBatchRequest(values []Metrics) error {
 	logger.WithFields(logrus.Fields{
 		"request": request,
 		"resonse": resp,
-	}).Info("Metrics were sended")
+	}).Info("Metrics were sent")
 
 	resp.Body.Close()
+
 	return nil
 }
 
@@ -94,10 +97,58 @@ func (c *Collector) updateStat() {
 	c.statCollection.UpdateMetric(c.stat)
 }
 
+func (c *Collector) updateMemStat() {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
+	v, _ := mem.VirtualMemory()
+	c.statCollection.UpdateMemStat(v)
+}
+
+func (c *Collector) updateCPUStat() {
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
+
+	cpu, err := cpu.Percent(time.Millisecond, true)
+	if err != nil {
+		cpu = make([]float64, runtime.NumCPU())
+		logger.Error(err)
+	}
+	c.statCollection.UpdateCPUStat(cpu)
+}
+
+func (c *Collector) updateStatWorker(ch <-chan struct{}) {
+	for range ch {
+		c.updateStat()
+	}
+}
+
+func (c *Collector) updateCPUMemWorker(ch <-chan struct{}) {
+	for range ch {
+		c.updateMemStat()
+		c.updateCPUStat()
+	}
+}
+
+func (c *Collector) sendReportWorker(ch <-chan struct{}) {
+	for range ch {
+		c.sendReport()
+	}
+}
+
 func (c *Collector) Do() {
 	logger.Info("start metrics watching")
 	updateTicker := time.NewTicker(c.pollInterval)
 	reportTicker := time.NewTicker(c.reportInterval)
+
+	statCh := make(chan struct{})
+	go c.updateStatWorker(statCh)
+
+	cpuCh := make(chan struct{})
+	go c.updateCPUMemWorker(cpuCh)
+
+	reportCh := make(chan struct{})
+	go c.sendReportWorker(reportCh)
 
 	defer func() {
 		updateTicker.Stop()
@@ -107,9 +158,10 @@ func (c *Collector) Do() {
 	for {
 		select {
 		case <-updateTicker.C:
-			c.updateStat()
+			statCh <- struct{}{}
+			cpuCh <- struct{}{}
 		case <-reportTicker.C:
-			c.sendReport()
+			reportCh <- struct{}{}
 		case sig := <-c.signals.C:
 			logger.WithField("signal", sig).Info("agent interrupted")
 			return
@@ -132,6 +184,8 @@ func NewCollector(endpoint string, pollInterval time.Duration, reportInterval ti
 	}
 
 	collector.updateStat()
+	collector.updateMemStat()
+	collector.updateCPUStat()
 
 	return &collector
 }
