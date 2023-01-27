@@ -82,14 +82,14 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 
 	stat := runtime.MemStats{}
 	runtime.ReadMemStats(&stat)
-
+	values := make([]entity.Metrics, 29)
 	alloc := float64(stat.Alloc)
 	value := entity.Metrics{
 		ID:    "Alloc",
 		MType: "gauge",
 		Value: &alloc,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	buckHashSys := float64(stat.BuckHashSys)
 	value = entity.Metrics{
@@ -97,7 +97,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &buckHashSys,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	frees := float64(stat.Frees)
 	value = entity.Metrics{
@@ -105,7 +105,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &frees,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	gCCPUFraction := float64(stat.GCCPUFraction)
 	value = entity.Metrics{
@@ -113,7 +113,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &gCCPUFraction,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	gcSys := float64(stat.GCSys)
 	value = entity.Metrics{
@@ -121,7 +121,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &gcSys,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	heapAlloc := float64(stat.HeapAlloc)
 	value = entity.Metrics{
@@ -129,7 +129,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &heapAlloc,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	heapIdle := float64(stat.HeapIdle)
 	value = entity.Metrics{
@@ -137,7 +137,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &heapIdle,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	heapInuse := float64(stat.HeapInuse)
 	value = entity.Metrics{
@@ -145,7 +145,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &heapInuse,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	heapObjects := float64(stat.HeapObjects)
 	value = entity.Metrics{
@@ -153,7 +153,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &heapObjects,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	heapReleased := float64(stat.HeapReleased)
 	value = entity.Metrics{
@@ -161,7 +161,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &heapReleased,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	heapSys := float64(stat.HeapSys)
 	value = entity.Metrics{
@@ -169,7 +169,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &heapSys,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	mCacheInuse := float64(stat.MCacheInuse)
 	value = entity.Metrics{
@@ -177,7 +177,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &mCacheInuse,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	mCacheSys := float64(stat.MCacheSys)
 	value = entity.Metrics{
@@ -185,7 +185,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &mCacheSys,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	mSpanSys := float64(stat.MSpanSys)
 	value = entity.Metrics{
@@ -193,7 +193,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &mSpanSys,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	mallocs := float64(stat.Mallocs)
 	value = entity.Metrics{
@@ -201,7 +201,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &mallocs,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	nextGC := float64(stat.NextGC)
 	value = entity.Metrics{
@@ -209,7 +209,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &nextGC,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	numForcedGC := float64(stat.NumForcedGC)
 	value = entity.Metrics{
@@ -217,7 +217,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &numForcedGC,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	numGC := float64(stat.NumGC)
 	value = entity.Metrics{
@@ -225,7 +225,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &numGC,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	otherSys := float64(stat.OtherSys)
 	value = entity.Metrics{
@@ -233,7 +233,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &otherSys,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	pauseTotalNs := float64(stat.PauseTotalNs)
 	value = entity.Metrics{
@@ -241,7 +241,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &pauseTotalNs,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	stackInuse := float64(stat.StackInuse)
 	value = entity.Metrics{
@@ -249,7 +249,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &stackInuse,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	stackSys := float64(stat.StackSys)
 	value = entity.Metrics{
@@ -257,7 +257,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &stackSys,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	sys := float64(stat.Sys)
 	value = entity.Metrics{
@@ -265,7 +265,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &sys,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	totalAlloc := float64(stat.TotalAlloc)
 	value = entity.Metrics{
@@ -273,7 +273,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &totalAlloc,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	lastGC := float64(stat.LastGC)
 	value = entity.Metrics{
@@ -281,7 +281,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &lastGC,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	lookups := float64(stat.Lookups)
 	value = entity.Metrics{
@@ -289,7 +289,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &lookups,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	mSpanInuse := float64(stat.MSpanInuse)
 	value = entity.Metrics{
@@ -297,7 +297,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &mSpanInuse,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	randomValue := rand.Float64()
 	value = entity.Metrics{
@@ -305,7 +305,7 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &randomValue,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	pollCount := uint64(1)
 	value = entity.Metrics{
@@ -313,7 +313,12 @@ func (c *Collector) updateMemStat(wg *sync.WaitGroup) {
 		MType: "counter",
 		Delta: &pollCount,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
+
+	err := c.storage.BatchUpdate(values)
+	if err != nil {
+		logger.Error(err)
+	}
 }
 
 func (c *Collector) updateVirtualMemoryStat(wg *sync.WaitGroup) {
@@ -324,6 +329,7 @@ func (c *Collector) updateVirtualMemoryStat(wg *sync.WaitGroup) {
 		logger.Error(err)
 		return
 	}
+	values := make([]entity.Metrics, 2)
 
 	totalMemory := float64(v.Total)
 	value := entity.Metrics{
@@ -331,7 +337,7 @@ func (c *Collector) updateVirtualMemoryStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &totalMemory,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
 
 	free := float64(v.Free)
 	value = entity.Metrics{
@@ -339,7 +345,12 @@ func (c *Collector) updateVirtualMemoryStat(wg *sync.WaitGroup) {
 		MType: "gauge",
 		Value: &free,
 	}
-	c.storage.Update(value)
+	values = append(values, value)
+	c.storage.BatchUpdate(values)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
 }
 
 func (c *Collector) updateCpuStat(wg *sync.WaitGroup) {
@@ -352,19 +363,22 @@ func (c *Collector) updateCpuStat(wg *sync.WaitGroup) {
 		cpu = make([]float64, runtime.NumCPU())
 		logger.Error(err)
 	}
-
+	values := make([]entity.Metrics, 2)
 	for i := 1; i <= runtime.NumCPU(); i++ {
 		value := entity.Metrics{
 			ID:    fmt.Sprintf("CPUutilization%d", i),
 			MType: "gauge",
 			Value: &cpu[i-1],
 		}
-		err = c.storage.Update(value)
-		if err != nil {
-			logger.Error(err)
-			return
-		}
+		values = append(values, value)
 	}
+
+	c.storage.BatchUpdate(values)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
 }
 
 func (c *Collector) sendReportWorker(ch <-chan struct{}) {
