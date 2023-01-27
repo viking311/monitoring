@@ -354,21 +354,23 @@ func (c *Collector) updateVirtualMemoryStat(wg *sync.WaitGroup) {
 }
 
 func (c *Collector) updateCPUStat(wg *sync.WaitGroup) {
-	logger.Debug("update CpuStat")
+	logger.Debug("update CPUStat")
 
 	defer wg.Done()
 
 	cpu, err := cpu.Percent(time.Millisecond, true)
 	if err != nil {
-		cpu = make([]float64, runtime.NumCPU())
 		logger.Error(err)
+		return
 	}
-	values := make([]entity.Metrics, 2)
-	for i := 1; i <= runtime.NumCPU(); i++ {
+
+	values := make([]entity.Metrics, runtime.NumCPU())
+
+	for i := 0; i < runtime.NumCPU(); i++ {
 		value := entity.Metrics{
-			ID:    fmt.Sprintf("CPUutilization%d", i),
+			ID:    fmt.Sprintf("CPUutilization%d", i+1),
 			MType: "gauge",
-			Value: &cpu[i-1],
+			Value: &cpu[i],
 		}
 		values = append(values, value)
 	}
