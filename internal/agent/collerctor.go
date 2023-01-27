@@ -364,7 +364,7 @@ func (c *Collector) updateCPUStat(wg *sync.WaitGroup) {
 		return
 	}
 
-	values := make([]entity.Metrics, runtime.NumCPU())
+	// values := make([]entity.Metrics, runtime.NumCPU())
 
 	for ind, val := range cpu {
 		value := entity.Metrics{
@@ -372,9 +372,9 @@ func (c *Collector) updateCPUStat(wg *sync.WaitGroup) {
 			MType: "gauge",
 			Value: &val,
 		}
-		values = append(values, value)
+		c.storage.Update(value)
 	}
-	fmt.Println(values)
+	// fmt.Println(values)
 	// for i := 0; i < runtime.NumCPU(); i++ {
 	// 	value := entity.Metrics{
 	// 		ID:    fmt.Sprintf("CPUutilization%d", i+1),
