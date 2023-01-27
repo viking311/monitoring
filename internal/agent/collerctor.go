@@ -70,7 +70,7 @@ func (c *Collector) updateMetrics() {
 
 	go c.updateMemStat(wg)
 	go c.updateVirtualMemoryStat(wg)
-	go c.updateCpuStat(wg)
+	go c.updateCPUStat(wg)
 
 	wg.Wait()
 }
@@ -346,14 +346,14 @@ func (c *Collector) updateVirtualMemoryStat(wg *sync.WaitGroup) {
 		Value: &free,
 	}
 	values = append(values, value)
-	c.storage.BatchUpdate(values)
+	err = c.storage.BatchUpdate(values)
 	if err != nil {
 		logger.Error(err)
 		return
 	}
 }
 
-func (c *Collector) updateCpuStat(wg *sync.WaitGroup) {
+func (c *Collector) updateCPUStat(wg *sync.WaitGroup) {
 	logger.Debug("update CpuStat")
 
 	defer wg.Done()
@@ -373,7 +373,7 @@ func (c *Collector) updateCpuStat(wg *sync.WaitGroup) {
 		values = append(values, value)
 	}
 
-	c.storage.BatchUpdate(values)
+	err = c.storage.BatchUpdate(values)
 	if err != nil {
 		logger.Error(err)
 		return
