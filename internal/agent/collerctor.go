@@ -358,31 +358,27 @@ func (c *Collector) updateCPUStat(wg *sync.WaitGroup) {
 
 	defer wg.Done()
 
-	cpu, err := cpu.Percent(time.Millisecond, true)
+	statCPU, err := cpu.Percent(time.Second, true)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	cpuCounts, err := cpu.Counts(true)
 	if err != nil {
 		logger.Error(err)
 		return
 	}
 
-	// values := make([]entity.Metrics, runtime.NumCPU())
+	values := make([]entity.Metrics, cpuCounts)
 
-	for ind, val := range cpu {
+	for i := 0; i < cpuCounts; i++ {
 		value := entity.Metrics{
-			ID:    fmt.Sprintf("CPUutilization%d", ind+1),
+			ID:    fmt.Sprintf("CPUutilization%d", i+1),
 			MType: "gauge",
-			Value: &val,
+			Value: &statCPU[i],
 		}
-		c.storage.Update(value)
+		values = append(values, value)
 	}
-	// fmt.Println(values)
-	// for i := 0; i < runtime.NumCPU(); i++ {
-	// 	value := entity.Metrics{
-	// 		ID:    fmt.Sprintf("CPUutilization%d", i+1),
-	// 		MType: "gauge",
-	// 		Value: &cpu[i],
-	// 	}
-	// 	values = append(values, value)
-	// }
 
 	err = c.storage.BatchUpdate(values)
 	if err != nil {
