@@ -386,7 +386,13 @@ func (c *Collector) sendReport() {
 		return
 	}
 
-	err = c.sendBatchRequest(collection)
+	values := make([]entity.Metrics, 0, len(collection))
+	for _, item := range collection {
+		item.Hash = entity.MetricsHash(item, c.hashKey)
+		values = append(values, item)
+	}
+
+	err = c.sendBatchRequest(values)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -395,7 +401,10 @@ func (c *Collector) sendReport() {
 		MType: "counter",
 	}
 
-	c.storage.Delete(value.GetKey())
+	err = c.storage.Delete(value.GetKey())
+	if err != nil {
+		logger.Error(err)
+	}
 
 }
 
