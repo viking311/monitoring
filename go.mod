@@ -2,7 +2,10 @@ module github.com/viking311/monitoring
 
 go 1.19
 
+require github.com/shirou/gopsutil v3.21.11+incompatible
+
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
 	github.com/caarlos0/env/v6 v6.10.1 // indirect
 	github.com/chi-middleware/logrus-logger v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -12,7 +15,6 @@ require (
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
-	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.22.11 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
